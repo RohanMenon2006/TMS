@@ -1,0 +1,26 @@
+# 1 = check
+# 0 = unchecked
+# this is just for 1 guy, for multiple people you'll need different variables and def ig, Im not sure I didnt explore that yet.
+
+#The code:
+ 
+import customtkinter as ctk
+
+root = ctk.CTk()
+
+root.geometry("200x100")
+root.title("Login")
+
+check_state = ctk.IntVar()
+
+def check_login():
+    if check_state.get() == 1:
+        print("true")
+    elif check_state.get() == 0:
+        print("false")
+
+checkbox2 = ctk.CTkCheckBox(master=root, text="Remember Me", font=('Century Gothic', 12), variable=check_state, command=check_login)
+checkbox2.pack(padx=10, pady=10)
+
+root.mainloop()
+
