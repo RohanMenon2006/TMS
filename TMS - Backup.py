@@ -2,35 +2,51 @@
 
 # Importing required modules
 import customtkinter as ctk
-import tkinter
 from tkinter import ttk
-from PIL import ImageTk
 from PIL import Image
-import openpyxl
+import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # importing the setting of the program
 fam = open("appearance.txt", "r")
 appearance = fam.read()
 fam.close()
 
-fsm = open('Scale.txt', 'r')
-scaling = float(fsm.read())
-fsm.close()
-file_scaling = int(scaling) / 100
-
-# setting the theme of the program
+# setting the theme of the program``
 ctk.set_appearance_mode(appearance)
 ctk.set_default_color_theme("green")
-ctk.set_widget_scaling(file_scaling)
 
 # making the program fullscreen only
 root = ctk.CTk()
-root.overrideredirect(True)
-root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
+root.title("TMS")
+root.iconbitmap("TMS.ico")
+ 
+# to set the program to fullscreen only
+# root.overrideredirect(True)
+# root.attributes('-fullscreen', True)
+
+width = int((root.winfo_screenwidth()) * 0.95)
+height = int((root.winfo_screenheight()) * 0.85)
+
+wingeo = "{0}x{1}".format(width, height)
+root.minsize(width, height)
+root.geometry(wingeo)
 
 # setting the frame of the program
-frame = ctk.CTkFrame(master=root, corner_radius=15)
-frame.pack(fill="both", expand=True)
+frame = ctk.CTkFrame(master=root)
+
+def create_frame():
+
+    global frame
+
+    frame = ctk.CTkFrame(master=root)
+    frame.pack(fill="both", expand=True)
+
+create_frame()
+
+def quit():
+    root.destroy()
 
 # dev team name x_x
 name = "The Mallus"
@@ -38,27 +54,177 @@ name = "The Mallus"
 # defined y location for the login form to make adjustment easier
 login_form_y = 0.45
 
+label1 = ctk.CTkLabel(master=frame, text="", font=('Segoe Ui', 45))
+
+# user profile for admin
+def account():
+    global frame
+    is_dropdown_open = False
+
+    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
+
+    acc_frame_margin = 16
+    acc_frame_padding = 8
+
+    global acc_frame
+
+    acc_frame = ctk.CTkFrame(master=frame, height=45, corner_radius=10, fg_color="#383838")
+    acc_frame.pack(side=ctk.TOP, anchor=ctk.E, padx=acc_frame_margin, pady=acc_frame_margin)
+
+    dropdown_frame = ctk.CTkFrame(master=frame, corner_radius=15, fg_color="#383838")
+
+    def change_appearance_mode_event(new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+        fa = open("appearance.txt", "w")
+        fa.write(new_appearance_mode)
+        fa.close()
+        
+    fam = open('appearance.txt', 'r')
+    appearance = fam.read()
+    fam.close()
+    
+    currentappearance = ctk.StringVar(value=appearance)
+
+    settings_button = ctk.CTkOptionMenu(master=dropdown_frame, 
+                                        values=["Dark", "Light", "System"],
+                                        command=change_appearance_mode_event,
+                                        font=('Segoe Ui', 15),
+                                        variable=currentappearance
+                                        )
+
+    def logout():
+        fh = open('login_remember_admin.txt', 'w')
+        str2 = "false"
+        print(str2)
+        fh.write(str2)
+        fh.close()
+        label1.pack_forget()
+        frame.destroy()
+        create_frame()
+        tab1()
+        destroy_dropdown(True)
+
+    logout1 = ctk.CTkButton(master=dropdown_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
+
+    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=quit)
+
+    def place_dropdown():
+        dropdown_frame.pack(side=ctk.TOP, anchor=ctk.NE, padx=acc_frame_margin)
+
+        settings_button.pack(padx=10, pady=10)
+        logout1.pack(padx=10)
+        _quit.pack(padx=10, pady=10)
+
+    def destroy_dropdown(do_logout=False):
+        dropdown_frame.pack_forget()
+        if do_logout:
+            acc_frame.pack_forget()
+
+    def toggle_dropdown():
+        nonlocal is_dropdown_open
+        destroy_dropdown() if is_dropdown_open else place_dropdown()
+        is_dropdown_open = not is_dropdown_open
+
+    user_button = ctk.CTkButton(master=acc_frame, image=user_image, text="  Admin", font=('Segoe Ui', 18),
+                                fg_color="#383838", hover_color="#383838",
+                                command=toggle_dropdown, anchor="w", compound="left")
+    user_button.pack(padx=acc_frame_padding, pady=acc_frame_padding)
+
+# user profile for teachers
+def taccount():
+    global frame
+    is_dropdown_open = False
+
+    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
+
+    acc_frame_margin = 16
+    acc_frame_padding = 8
+
+    acc_frame = ctk.CTkFrame(master=frame, height=45, corner_radius=10, fg_color="#383838")
+    acc_frame.pack(side=ctk.TOP, anchor=ctk.E, padx=acc_frame_margin, pady=acc_frame_margin)
+
+    dropdown_frame = ctk.CTkFrame(master=frame, corner_radius=15, fg_color="#383838")
+
+    def change_appearance_mode_event(new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+        fa = open("appearance.txt", "w")
+        fa.write(new_appearance_mode)
+        fa.close()
+        
+    fam = open('appearance.txt', 'r')
+    appearance = fam.read()
+    fam.close()
+    
+    currentappearance = ctk.StringVar(value=appearance)
+
+    settings_button = ctk.CTkOptionMenu(master=dropdown_frame, 
+                                        values=["Dark", "Light", "System"],
+                                        command=change_appearance_mode_event,
+                                        font=('Segoe Ui', 15),
+                                        variable=currentappearance
+                                        )
+
+    def logout():
+        fh = open('login_remember_teach.txt', 'w')
+        str2 = "false"
+        print(str2)
+        fh.write(str2)
+        fh.close()
+        label1.pack_forget()
+        frame.destroy()
+        create_frame()
+        tab1()
+        destroy_dropdown(True)
+
+    logout1 = ctk.CTkButton(master=dropdown_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
+
+    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=quit)
+
+    def place_dropdown():
+        dropdown_frame.pack(side=ctk.TOP, anchor=ctk.NE, padx=acc_frame_margin)
+
+        settings_button.pack(padx=10, pady=10)
+        logout1.pack(padx=10)
+        _quit.pack(padx=10, pady=10)
+
+    def destroy_dropdown(do_logout=False):
+        dropdown_frame.pack_forget()
+        if do_logout:
+            acc_frame.pack_forget()
+
+    def toggle_dropdown():
+        nonlocal is_dropdown_open
+        destroy_dropdown() if is_dropdown_open else place_dropdown()
+        is_dropdown_open = not is_dropdown_open
+
+    # user_icon = ctk.CTkLabel(master=acc_frame, text="", image=user_image)
+    # user_icon.pack(side=ctk.LEFT, padx=acc_frame_padding)
+
+    user_button = ctk.CTkButton(master=acc_frame, image=user_image, text="  Teacher", font=('Segoe Ui', 18),
+                                fg_color="#383838", hover_color="#383838",
+                                command=toggle_dropdown, anchor="w", compound="left")
+    user_button.pack(padx=acc_frame_padding, pady=acc_frame_padding)
 
 # login program
 # if rl is false is runs the login program
 def tab1():
+
+    frame.pack_configure(fill="both", expand=True)
+
     label = ctk.CTkLabel(master=frame, text="Login Page", font=('Segoe Ui', 45))
     label.pack(fill="both", expand=True)
     label.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     frame1 = ctk.CTkFrame(master=frame, width=320, height=360, corner_radius=20)
-    frame1.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
+    frame1.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
     label1 = ctk.CTkLabel(master=frame1, text="Log into your Account", font=('Segoe Ui', 25))
-    label1.pack()
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     entry1 = ctk.CTkEntry(master=frame1, width=250, placeholder_text="Username", font=('Segoe Ui', 17))
-    entry1.pack(padx=10, pady=12)
     entry1.place(relx=0.5, rely=login_form_y - 0.08, anchor=ctk.CENTER)
 
     entry2 = ctk.CTkEntry(master=frame1, width=250, placeholder_text="Password", show="*", font=('Segoe Ui', 17))
-    entry2.pack(padx=10, pady=12)
     entry2.place(relx=0.5, rely=login_form_y + 0.07, anchor=ctk.CENTER)
 
     cb_va = ctk.IntVar(value=0)
@@ -69,8 +235,7 @@ def tab1():
         else:
             entry2.configure(show='*')
 
-    checkbox1 = ctk.CTkCheckBox(master=frame1, text='', corner_radius=5, font=('Segoe Ui', 12), variable=cb_va,
-                                onvalue=1, offvalue=0, command=my_show)
+    checkbox1 = ctk.CTkCheckBox(master=frame1, text='', corner_radius=5, font=('Segoe Ui', 12), variable=cb_va, onvalue=1, offvalue=0, command=my_show)
     checkbox1.configure(width=0, height=1)
     checkbox1.place(relx=0.836, rely=login_form_y + 0.07, anchor=ctk.CENTER)
 
@@ -79,8 +244,7 @@ def tab1():
         textbox4.place(relx=0.5, rely=login_form_y + 0.3, anchor=ctk.CENTER)
         textbox3.place(relx=2, rely=2)
 
-    forgot = ctk.CTkButton(master=frame1, text="Forgot Password?", font=('Century Gothic', 12), fg_color="#333333",
-                           command=p_forgot)
+    forgot = ctk.CTkButton(master=frame1, text="Forgot Password?", font=('Century Gothic', 12), fg_color="#333333", command=p_forgot)
     forgot.configure(height=1, width=1)
     forgot.place(relx=0.75, rely=login_form_y + 0.2, anchor=ctk.CENTER)
 
@@ -102,20 +266,19 @@ def tab1():
                 fh.close()
         if entry1.get() == "Teacher" and entry2.get() == "Teacher123":
             if check_state.get() == 1:
-                fh = open('login remember teach.txt', 'w')
+                fh = open('login_remember_teach.txt', 'w')
                 str1 = "true"
                 print(str1)
                 fh.write(str1)
                 fh.close()
             elif check_state.get() == 0:
-                fh = open('login remember teach.txt', 'w')
+                fh = open('login_remember_teach.txt', 'w')
                 str2 = "false"
                 print(str2)
                 fh.write(str2)
                 fh.close()
 
-    checkbox2 = ctk.CTkCheckBox(master=frame1, text="Remember Me", font=('Century Gothic', 12), variable=check_state,
-                                command=check_login)
+    checkbox2 = ctk.CTkCheckBox(master=frame1, text="Remember Me", font=('Century Gothic', 12), variable=check_state, command=check_login)
     checkbox2.pack(padx=10, pady=12)
     checkbox2.configure(height=0, width=0)
     checkbox2.place(relx=0.3, rely=login_form_y + 0.2, anchor=ctk.CENTER)
@@ -124,7 +287,8 @@ def tab1():
 
     textbox4 = ctk.CTkLabel(master=frame1, height=5, text="How did you forget that? :|", font=('Segoe Ui', 13))
 
-    def destory_login():
+    def open_admin():
+        entry2.configure(show='*')
         label.destroy()
         label1.destroy()
         frame1.configure(width=0, height=0)
@@ -139,8 +303,10 @@ def tab1():
         _quit.destroy()
         text_name.destroy()
         tab2()
+        account()
 
-    def destory_login2():
+    def open_teacher():
+        entry2.configure(show='*')
         label.destroy()
         label1.destroy()
         frame1.configure(width=0, height=0)
@@ -155,491 +321,118 @@ def tab1():
         _quit.destroy()
         text_name.destroy()
         ttab2()
+        taccount()
 
     def login_details():
         if entry1.get() == "Admin" and entry2.get() == "Admin123":
-            destory_login()
+            open_admin()
         elif entry1.get() == "Teacher" and entry2.get() == "Teacher123":
-            destory_login2()
+            open_teacher()
         else:
             textbox3
             textbox3.place(relx=0.5, rely=login_form_y + 0.3, anchor=ctk.CENTER)
             textbox4.place(relx=2, rely=2)
 
-    cbutton = ctk.CTkButton(master=frame1, width=180, height=15, corner_radius=100, text="Login", font=('Segoe Ui', 20),
-                            command=login_details)
+    cbutton = ctk.CTkButton(master=frame1, width=180, height=15, corner_radius=100, text="Login", font=('Segoe Ui', 20), command=login_details)
     cbutton.pack(padx=10, pady=12)
     cbutton.place(relx=0.5, rely=login_form_y + 0.43, anchor=ctk.CENTER)
 
-    _quit = ctk.CTkButton(master=frame, text="Quit", font=('Segoe Ui', 15), command=exit)
+    _quit = ctk.CTkButton(master=frame, text="Quit", font=('Segoe Ui', 15), command=quit)
     _quit.pack()
     _quit.place(relx=0.89, rely=0.95, anchor=ctk.NW)
 
-    text_name = ctk.CTkLabel(master=frame, height=5, text=name, corner_radius=15, font=('Segoe Ui', 18))
-    text_name.pack()
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
-
+    text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+    text_name.pack(padx=1, pady=2)
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
 # program lobby - Admin
 # if rl is true it skips login and runs the program
 def tab2():
-    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 55))
+
+    global label1
+
+    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 45))
     label1.pack(fill="both", expand=True)
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    acb_va = ctk.IntVar(value=0)
-
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global admin_frame
-
-            admin_frame = ctk.CTkFrame(master=frame, width=150, height=150, corner_radius=15)
-            admin_frame.pack()
-            admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            def logout():
-                fl = open('login_remember_admin.txt', 'w')
-                str2 = "false"
-                print(str2)
-                fl.write(str2)
-                fl.close()
-                destroy_account()
-                destroy_tab2a()
-                tab1()
-
-            def destroy_account():
-                admin_frame.destroy()
-                settings_button.destroy()
-                logout1.destroy()
-                _quit.destroy()
-
-            def destroy_tab2a():
-                label1.destroy()
-                view_button.destroy()
-                man_button.destroy()
-                sub_button.destroy()
-                admin_label.destroy()
-                admin_checkbox.destroy()
-                logout1.destroy()
-                text_name.destroy()
-                _quit.destroy()
-
-            settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.25, anchor=ctk.CENTER)
-
-            logout1 = ctk.CTkButton(master=admin_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
-            logout1.pack(padx=10, pady=10)
-            logout1.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
-        else:
-            admin_frame.destroy()
-
-    admin_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    admin_checkbox.pack()
-    admin_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    admin_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    admin_label.pack()
-    admin_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-    def destroy_tab2():
-        label1.destroy()
+    def clear_tab2():
         view_button.destroy()
         man_button.destroy()
         sub_button.destroy()
-        admin_label.destroy()
-        admin_checkbox.destroy()
         text_name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
 
     def button_view():
-        destroy_tab2()
+        clear_tab2()
         tabview()
 
     def button_man():
-        destroy_tab2()
+        clear_tab2()
         tabman()
 
     def button_sub():
-        destroy_tab2()
+        clear_tab2()
         tabsub()
 
-    view_button = ctk.CTkButton(frame, text="View Timetables", font=('Segoe Ui', 45), command=button_view)
+    view_button = ctk.CTkButton(frame, text="View Timetables", font=('Segoe Ui', 35), command=button_view)
     view_button.pack(padx=10, pady=30)
     view_button.place(relx=0.5, rely=0.35, anchor=ctk.N)
 
-    man_button = ctk.CTkButton(frame, text="Manage Timetables", font=('Segoe Ui', 45), command=button_man)
+    man_button = ctk.CTkButton(frame, text="Manage Timetables", font=('Segoe Ui', 35), command=button_man)
     man_button.pack(padx=10, pady=30)
     man_button.place(relx=0.5, rely=0.5, anchor=ctk.N)
 
-    sub_button = ctk.CTkButton(frame, text="Substitute Absent Teachers", font=('Segoe Ui', 45), command=button_sub)
+    sub_button = ctk.CTkButton(frame, text="Substitute Absent Teachers", font=('Segoe Ui', 35), command=button_sub)
     sub_button.pack(padx=10, pady=30)
     sub_button.place(relx=0.5, rely=0.65, anchor=ctk.N)
 
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
-
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
 # to view the timetable - Admin
 def tabview():
-    view_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-    view_label.pack()
-    view_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+
+    frame.pack_configure(fill="both", expand=True)
+
+    label1.configure(text="Timetables")
+    label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     view_label2 = ctk.CTkLabel(master=frame, text="Pick a class", font=('Segoe Ui', 35))
     view_label2.pack()
     view_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-    acb_va = ctk.IntVar(value=0)
-
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global admin_frame
-
-            admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-            admin_frame.pack()
-            admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-        else:
-            admin_frame.destroy()
-
-    admin_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    admin_checkbox.pack()
-    admin_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    admin_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    admin_label.pack()
-    admin_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-    # reading the Excel files
+# reading the Excel files
 
     def class11():
-
-        class11_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-        class11_label.pack()
-        class11_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+        label1.configure(text="Timetables")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
         class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
-        class11_label2.pack()
         class11_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
-
-        acb_va1 = ctk.IntVar(value=0)
-
-        # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-        def account1():
-            if acb_va1.get() == 1:
-
-                global admin_frame
-
-                admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                admin_frame.pack()
-                admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                def settings():
-                    settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                    settings_frame.pack(fill="both", expand=True)
-
-                    settings_1 = ctk.CTkFrame(master=settings_frame)
-                    settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                    settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                    settings_label.pack(padx=10, pady=12)
-                    settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                    def change_appearance_mode_event(new_appearance_mode: str):
-                        ctk.set_appearance_mode(new_appearance_mode)
-                        fa = open("appearance.txt", "w")
-                        fa.write(new_appearance_mode)
-                        fa.close()
-
-                    appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                    appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                    appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                               command=change_appearance_mode_event)
-                    appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                    def change_scaling_event(new_scaling: str):
-                        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                        ctk.set_widget_scaling(new_scaling_float)
-                        fs = open('Scale.txt', 'w')
-                        n_scaling = new_scaling.replace("%", "")
-                        fs.write(n_scaling)
-                        fs.close()
-
-                    scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                    scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                    scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                       command=change_scaling_event)
-                    scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                    def destroy_settings():
-                        settings_frame.destroy()
-                        settings_1.destroy()
-                        settings_label.destroy()
-                        appearance_mode_label.destroy()
-                        appearance_mode_option.destroy()
-                        scaling_label.destroy()
-                        scaling_option.destroy()
-                        _save.destroy()
-
-                    _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                          command=destroy_settings)
-                    _save.pack(padx=10, pady=12)
-                    _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                command=settings)
-                settings_button.pack(padx=10, pady=12)
-                settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                _quit.pack(padx=10, pady=12)
-                _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-            else:
-                admin_frame.destroy()
-
-        admin1_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                          variable=acb_va1, onvalue=1, offvalue=0, command=account1)
-        admin1_checkbox.pack()
-        admin1_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-        user1_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-        admin1_label = ctk.CTkLabel(master=frame, text="", image=user1_image)
-        admin1_label.pack()
-        admin1_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
 
         def view1():
 
-            view1_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view1_label.pack()
-            view1_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
-            class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global admin_frame
-
-                    admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    admin_frame.pack()
-                    admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    admin_frame.destroy()
-
-            admin2_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            admin2_checkbox.pack()
-            admin2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            admin2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            admin2_label.pack()
-            admin2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -660,129 +453,44 @@ def tabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view1_label.destroy()
+                label1.pack_forget()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                admin2_checkbox.destroy()
-                admin2_label.destroy()
-                if acb_va2.get() == 1:
-                    admin_frame.destroy()
                 class11()
 
             view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view1_back.pack(pady=60)
-            view1_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def view2():
 
-            view2_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view2_label.pack()
-            view2_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global admin_frame
-
-                    admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    admin_frame.pack()
-                    admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    admin_frame.destroy()
-
-            admin2_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            admin2_checkbox.pack()
-            admin2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            admin2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            admin2_label.pack()
-            admin2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.title['Class 11 C']
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -802,48 +510,36 @@ def tabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view2_label.destroy()
+                label1.pack_forget()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                admin2_checkbox.destroy()
-                admin2_label.destroy()
-                if acb_va2.get() == 1:
-                    admin_frame.destroy()
                 class11()
 
             view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view2_back.pack(pady=60)
-            view2_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def go_view1():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            admin1_checkbox.destroy()
-            admin1_label.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
             view1()
 
         def go_view2():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            admin1_label.destroy()
-            admin1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
             view2()
 
         view1_button = ctk.CTkButton(frame, text="Class 11 A", font=('Segoe Ui', 25), command=go_view1)
@@ -855,226 +551,54 @@ def tabview():
         view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
         def back11():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            admin1_label.destroy()
-            admin1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
             tabview()
 
         class11_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
         class11_name.pack(padx=1, pady=2)
-        class11_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+        class11_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
         class11_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back11)
         class11_back.pack()
-        class11_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+        class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
-    def class10():
+    def class12():
+        label1.configure(text="Timetables")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-        class10_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-        class10_label.pack()
-        class10_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-        class10_label2 = ctk.CTkLabel(master=frame, text="Class 10", font=('Segoe Ui', 35))
-        class10_label2.pack()
-        class10_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
-
-        acb_va1 = ctk.IntVar(value=0)
-
-        # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-        def account1():
-            if acb_va1.get() == 1:
-
-                global admin_frame
-
-                admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                admin_frame.pack()
-                admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                def settings():
-                    settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                    settings_frame.pack(fill="both", expand=True)
-
-                    settings_1 = ctk.CTkFrame(master=settings_frame)
-                    settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                    settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                    settings_label.pack(padx=10, pady=12)
-                    settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                    def change_appearance_mode_event(new_appearance_mode: str):
-                        ctk.set_appearance_mode(new_appearance_mode)
-                        fa = open("appearance.txt", "w")
-                        fa.write(new_appearance_mode)
-                        fa.close()
-
-                    appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                    appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                    appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                               command=change_appearance_mode_event)
-                    appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                    def change_scaling_event(new_scaling: str):
-                        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                        ctk.set_widget_scaling(new_scaling_float)
-                        fs = open('Scale.txt', 'w')
-                        n_scaling = new_scaling.replace("%", "")
-                        fs.write(n_scaling)
-                        fs.close()
-
-                    scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                    scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                    scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                       command=change_scaling_event)
-                    scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                    def destroy_settings():
-                        settings_frame.destroy()
-                        settings_1.destroy()
-                        settings_label.destroy()
-                        appearance_mode_label.destroy()
-                        appearance_mode_option.destroy()
-                        scaling_label.destroy()
-                        scaling_option.destroy()
-                        _save.destroy()
-
-                    _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                          command=destroy_settings)
-                    _save.pack(padx=10, pady=12)
-                    _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                command=settings)
-                settings_button.pack(padx=10, pady=12)
-                settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                _quit.pack(padx=10, pady=12)
-                _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-            else:
-                admin_frame.destroy()
-
-        admin1_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                          variable=acb_va1, onvalue=1, offvalue=0, command=account1)
-        admin1_checkbox.pack()
-        admin1_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-        user1_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-        admin1_label = ctk.CTkLabel(master=frame, text="", image=user1_image)
-        admin1_label.pack()
-        admin1_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
+        class12_label2 = ctk.CTkLabel(master=frame, text="Class 12", font=('Segoe Ui', 35))
+        class12_label2.pack()
+        class12_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
         def view1():
 
-            view1_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view1_label.pack()
-            view1_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-            class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 A", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global admin_frame
-
-                    admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    admin_frame.pack()
-                    admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    admin_frame.destroy()
-
-            admin2_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            admin2_checkbox.pack()
-            admin2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            admin2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            admin2_label.pack()
-            admin2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -1095,129 +619,44 @@ def tabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view1_label.destroy()
+                label1.pack_forget()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                admin2_checkbox.destroy()
-                admin2_label.destroy()
-                if acb_va2.get() == 1:
-                    admin_frame.destroy()
-                class11()
+                class12()
 
             view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view1_back.pack(pady=60)
-            view1_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def view2():
+            
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-            view2_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view2_label.pack()
-            view2_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-            class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global admin_frame
-
-                    admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    admin_frame.pack()
-                    admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    admin_frame.destroy()
-
-            admin2_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            admin2_checkbox.pack()
-            admin2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            admin2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            admin2_label.pack()
-            admin2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.title['Class 11 C']
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -1237,108 +676,84 @@ def tabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view2_label.destroy()
+                label1.pack_forget()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                admin2_checkbox.destroy()
-                admin2_label.destroy()
-                if acb_va2.get() == 1:
-                    admin_frame.destroy()
-                class11()
+                class12()
 
             view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view2_back.pack(pady=60)
-            view2_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def go_view1():
-            class10_label.destroy()
-            class10_label2.destroy()
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            admin1_checkbox.destroy()
-            admin1_label.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
+            class12_name.destroy()
+            class12_back.destroy()
             view1()
 
         def go_view2():
-            class10_label.destroy()
-            class10_label2.destroy()
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            admin1_label.destroy()
-            admin1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
+            class12_name.destroy()
+            class12_back.destroy()
             view2()
 
-        view1_button = ctk.CTkButton(frame, text="Class 10 A", font=('Segoe Ui', 25), command=go_view1)
+        view1_button = ctk.CTkButton(frame, text="Class 12 A", font=('Segoe Ui', 25), command=go_view1)
         view1_button.pack(padx=10, pady=30)
         view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
 
-        view2_button = ctk.CTkButton(frame, text="Class 10 C", font=('Segoe Ui', 25), command=go_view2)
+        view2_button = ctk.CTkButton(frame, text="Class 12 C", font=('Segoe Ui', 25), command=go_view2)
         view2_button.pack(padx=10, pady=30)
         view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
-        def back10():
-            class10_label.destroy()
-            class10_label2.destroy()
+        def back12():
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            admin1_checkbox.destroy()
-            admin1_label.destroy()
-            if acb_va1.get() == 1:
-                admin_frame.destroy()
+            class12_name.destroy()
+            class12_back.destroy()
             tabview()
 
-        class10_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
-        class10_name.pack(padx=1, pady=2)
-        class10_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+        class12_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        class12_name.pack(padx=1, pady=2)
+        class12_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
-        class10_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back10)
-        class10_back.pack(pady=60)
-        class10_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
-    def go_class10():
-        view_label.destroy()
-        view_label2.destroy()
-        view_back.destroy()
-        class10_button.destroy()
-        class11_button.destroy()
-        admin_checkbox.destroy()
-        admin_label.destroy()
-        _name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
-        class10()
+        class12_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back12)
+        class12_back.pack(pady=60)
+        class12_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
     def go_class11():
-        view_label.destroy()
+        label1.pack_forget()
         view_label2.destroy()
         view_back.destroy()
-        class10_button.destroy()
-        class11_button.destroy()
-        admin_label.destroy()
-        admin_checkbox.destroy()
         _name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
+        class11_button.destroy()
+        class12_button.destroy()
         class11()
 
-    class10_button = ctk.CTkButton(frame, text="Class 10", font=('Segoe Ui', 25), command=go_class10)
-    class10_button.pack(padx=10, pady=30)
-    class10_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+    def go_class12():
+        label1.pack_forget()
+        view_label2.destroy()
+        view_back.destroy()
+        _name.destroy()
+        class11_button.destroy()
+        class12_button.destroy()
+        class12()
+
+    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+    class12_button.pack(padx=10, pady=30)
+    class12_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
 
     class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
     class11_button.pack(padx=10, pady=30)
@@ -1346,116 +761,29 @@ def tabview():
 
     _name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     _name.pack(padx=1, pady=2)
-    _name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+    _name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def back():
-        view_label.destroy()
+        label1.pack_forget()
         view_label2.destroy()
         view_back.destroy()
-        class10_button.destroy()
-        class11_button.destroy()
-        admin_label.destroy()
-        admin_checkbox.destroy()
         _name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
+        class12_button.destroy()
+        class11_button.destroy()
         tab2()
 
     view_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back)
     view_back.pack(pady=60)
-    view_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
+    view_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # to manage timetables - Admin
 def tabman():
-    man_label = ctk.CTkLabel(master=frame, text="Manage Timetables", font=('Segoe Ui', 40))
-    man_label.pack(padx=20, pady=100)
-    man_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    acb_va = ctk.IntVar(value=0)
+    frame.pack_configure(fill="both", expand=True)
 
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global admin_frame
-
-            admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-            admin_frame.pack()
-            admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-        else:
-            admin_frame.destroy()
-
-    admin_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    admin_checkbox.pack()
-    admin_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    admin_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    admin_label.pack()
-    admin_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
+    label1.configure(text="Manage Timetables")
+    label1.pack(padx=20, pady=100)
+    label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
     wip_label.pack(padx=20, pady=100)
@@ -1467,269 +795,111 @@ def tabman():
 
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def _back():
-        man_label.destroy()
         man_back.destroy()
-        admin_label.destroy()
-        admin_checkbox.destroy()
         wip_label.destroy()
         wip_label2.destroy()
         text_name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
         tab2()
 
     man_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
     man_back.pack(pady=60)
-    man_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
+    man_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # to substitute absent teachers
 def tabsub():
-    sub_label = ctk.CTkLabel(master=frame, text="Substitute Absent Teachers", font=('Segoe Ui', 40))
-    sub_label.pack(padx=20, pady=100)
-    sub_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    acb_va = ctk.IntVar(value=0)
+    label1.configure(text="Substitute Absent Teachers")
 
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
+    checkbox_frame = ctk.CTkFrame(master=frame, height=300, width=200, corner_radius=15, fg_color="#383838")
+    checkbox_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
-            global admin_frame
+    checkBoxes = []
 
-            admin_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-            admin_frame.pack()
-            admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
+    # get list of teachers
+    with open('Teachers.json', 'r') as file:
+        getTeachers = json.load(file)
+        
+        Teachers = {}
 
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
+        # get the checkbox output as true or false and mark the teacher present or absent
+        def check_login(teacher, state):
+            if state.get():
+                Teachers[teacher] = 'Present'
+            else:
+                Teachers[teacher] = 'Absent'
+            print("{teacher}: {state}".format(teacher=teacher, state=Teachers[teacher]))
+            
+        # create instance of checkbox for each teacher
+        for teacher in getTeachers:
+            
+            Teachers[teacher] = 'Absent'
+            
+            teacher_state = ctk.BooleanVar()
+            
+            checkBoxes.append(ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), variable=teacher_state,
+                                    command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state)))
 
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
+    # pack all checkboxes
+    for checkbox in checkBoxes:
+        checkbox.pack(side=ctk.LEFT)
+        checkbox.pack(padx=10, pady=10)
+        
+    def sub_teacher():
+        label1.configure(text="Substituted Timetable")
+        
+        wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
+        wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        
+        text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+        def sub_back():
+            wip_label.destroy()
+            text_name.destroy()
+            _back.destroy()
+            tabsub()
 
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-        else:
-            admin_frame.destroy()
-
-    admin_checkbox = ctk.CTkCheckBox(master=frame, text='Admin', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    admin_checkbox.pack()
-    admin_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    admin_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    admin_label.pack()
-    admin_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-    wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
-    wip_label.pack(padx=20, pady=100)
-    wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-
+        _back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=sub_back)
+        _back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+        
+    def next():
+        text_name.destroy()
+        sub_back.destroy()
+        _next.destroy()
+        checkbox_frame.destroy()
+        sub_teacher()
+        
+    _next = ctk.CTkButton(master=frame, text="Next", font=('Segoe Ui', 18), command=next)
+    _next.place(relx=0.45, rely=0.6)
+        
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def _back():
-        sub_label.destroy()
-        sub_back.destroy()
-        admin_label.destroy()
-        admin_checkbox.destroy()
-        wip_label.destroy()
         text_name.destroy()
-        if acb_va.get() == 1:
-            admin_frame.destroy()
+        sub_back.destroy()
+        _next.destroy()
+        checkbox_frame.destroy()
+        label1.destroy()
         tab2()
 
     sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
     sub_back.pack(pady=60)
-    sub_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
+    sub_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # program lobby - Teachers
 # if username and password is entered for teachers it runs this code
 def ttab2():
-    def destroy_ttab2():
-        label1.destroy()
-        view_button.destroy()
-        sub_button.destroy()
-        text_name.destroy()
-        teach_label.destroy()
-        teach_checkbox.destroy()
+         
+    global label1
 
-    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 55))
-    label1.pack(padx=10, pady=12)
+    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 45))
+    label1.pack(fill="both", expand=True)
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-    acb_va = ctk.IntVar(value=0)
-
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global admin_frame
-
-            admin_frame = ctk.CTkFrame(master=frame, width=150, height=150, corner_radius=15)
-            admin_frame.pack()
-            admin_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            def logout():
-                fh = open('login remember teach.txt', 'w')
-                str2 = "false"
-                print(str2)
-                fh.write(str2)
-                fh.close()
-                destroy_account()
-                destroy_ttab2a()
-                tab1()
-
-            def destroy_account():
-                admin_frame.destroy()
-                settings_button.destroy()
-                logout1.destroy()
-                _quit.destroy()
-
-            def destroy_ttab2a():
-                label1.destroy()
-                view_button.destroy()
-                sub_button.destroy()
-                teach_label.destroy()
-                teach_checkbox.destroy()
-                logout1.destroy()
-                text_name.destroy()
-                _quit.destroy()
-
-            settings_button = ctk.CTkButton(master=admin_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.25, anchor=ctk.CENTER)
-
-            logout1 = ctk.CTkButton(master=admin_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
-            logout1.pack(padx=10, pady=10)
-            logout1.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=admin_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
-        else:
-            admin_frame.destroy()
-
-    teach_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    teach_checkbox.pack()
-    teach_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    teach_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    teach_label.pack()
-    teach_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
 
     def button_view():
         destroy_ttab2()
@@ -1738,6 +908,13 @@ def ttab2():
     def button_sub():
         destroy_ttab2()
         ttabsub()
+
+    def destroy_ttab2():
+        label1.pack_forget()
+        view_button.destroy()
+        sub_button.destroy()
+        text_name.destroy()
+   
 
     view_button = ctk.CTkButton(frame, text="View Timetables", font=('Segoe Ui', 45), command=button_view)
     view_button.pack(padx=10, pady=30)
@@ -1749,306 +926,51 @@ def ttab2():
 
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
-
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
 # to view the timetable - Teachers
 def ttabview():
-    view_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-    view_label.pack()
-    view_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+
+    frame.pack_configure(fill="both", expand=True)
+    
+    label1.configure(text="Timetables")
+    label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     view_label2 = ctk.CTkLabel(master=frame, text="Pick a class", font=('Segoe Ui', 35))
     view_label2.pack()
     view_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
-
-    acb_va = ctk.IntVar(value=0)
-
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global teach_frame
-
-            teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-            teach_frame.pack()
-            teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-        else:
-            teach_frame.destroy()
-
-    teach_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    teach_checkbox.pack()
-    teach_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    teach_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    teach_label.pack()
-    teach_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
     # reading the Excel files
 
     def class11():
-
-        class11_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-        class11_label.pack()
-        class11_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+        label1.configure(text="Timetables")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
         class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
-        class11_label2.pack()
         class11_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
-
-        acb_va1 = ctk.IntVar(value=0)
-
-        # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-        def account1():
-            if acb_va1.get() == 1:
-
-                global teach_frame
-
-                teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                teach_frame.pack()
-                teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                def settings():
-                    settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                    settings_frame.pack(fill="both", expand=True)
-
-                    settings_1 = ctk.CTkFrame(master=settings_frame)
-                    settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                    settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                    settings_label.pack(padx=10, pady=12)
-                    settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                    def change_appearance_mode_event(new_appearance_mode: str):
-                        ctk.set_appearance_mode(new_appearance_mode)
-                        fa = open("appearance.txt", "w")
-                        fa.write(new_appearance_mode)
-                        fa.close()
-
-                    appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                    appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                    appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                               command=change_appearance_mode_event)
-                    appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                    def change_scaling_event(new_scaling: str):
-                        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                        ctk.set_widget_scaling(new_scaling_float)
-                        fs = open('Scale.txt', 'w')
-                        n_scaling = new_scaling.replace("%", "")
-                        fs.write(n_scaling)
-                        fs.close()
-
-                    scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                    scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                    scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                       command=change_scaling_event)
-                    scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                    def destroy_settings():
-                        settings_frame.destroy()
-                        settings_1.destroy()
-                        settings_label.destroy()
-                        appearance_mode_label.destroy()
-                        appearance_mode_option.destroy()
-                        scaling_label.destroy()
-                        scaling_option.destroy()
-                        _save.destroy()
-
-                    _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                          command=destroy_settings)
-                    _save.pack(padx=10, pady=12)
-                    _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                command=settings)
-                settings_button.pack(padx=10, pady=12)
-                settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                _quit.pack(padx=10, pady=12)
-                _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-            else:
-                teach_frame.destroy()
-
-        teach1_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                          variable=acb_va1, onvalue=1, offvalue=0, command=account1)
-        teach1_checkbox.pack()
-        teach1_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-        user1_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-        teach1_label = ctk.CTkLabel(master=frame, text="", image=user1_image)
-        teach1_label.pack()
-        teach1_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
 
         def view1():
 
-            view1_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view1_label.pack()
-            view1_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
-            class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global teach_frame
-
-                    teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    teach_frame.pack()
-                    teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    teach_frame.destroy()
-
-            teach2_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            teach2_checkbox.pack()
-            teach2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            teach2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            teach2_label.pack()
-            teach2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -2069,129 +991,45 @@ def ttabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view1_label.destroy()
+                label1.pack_forget()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                teach2_checkbox.destroy()
-                teach2_label.destroy()
-                if acb_va2.get() == 1:
-                    teach_frame.destroy()
                 class11()
 
             view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view1_back.pack(pady=60)
-            view1_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def view2():
 
-            view2_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view2_label.pack()
-            view2_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global teach_frame
-
-                    teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    teach_frame.pack()
-                    teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    teach_frame.destroy()
-
-            teach2_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            teach2_checkbox.pack()
-            teach2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            teach2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            teach2_label.pack()
-            teach2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
+            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -2211,48 +1049,36 @@ def ttabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view2_label.destroy()
+                label1.pack_forget()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                teach2_checkbox.destroy()
-                teach2_label.destroy()
-                if acb_va2.get() == 1:
-                    teach_frame.destroy()
                 class11()
 
             view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view2_back.pack(pady=60)
-            view2_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def go_view1():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            teach1_checkbox.destroy()
-            teach1_label.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
             view1()
 
         def go_view2():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            teach1_label.destroy()
-            teach1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
             view2()
 
         view1_button = ctk.CTkButton(frame, text="Class 11 A", font=('Segoe Ui', 25), command=go_view1)
@@ -2264,226 +1090,54 @@ def ttabview():
         view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
         def back11():
-            class11_label.destroy()
+            label1.pack_forget()
             class11_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
             class11_name.destroy()
             class11_back.destroy()
-            teach1_label.destroy()
-            teach1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
-            tabview()
+            ttabview()
 
         class11_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
         class11_name.pack(padx=1, pady=2)
-        class11_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+        class11_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
         class11_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back11)
         class11_back.pack()
-        class11_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+        class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
-    def class10():
+    def class12():
+        label1.configure(text="Timetables")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-        class10_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-        class10_label.pack()
-        class10_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-        class10_label2 = ctk.CTkLabel(master=frame, text="Class 10", font=('Segoe Ui', 35))
-        class10_label2.pack()
-        class10_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
-
-        acb_va1 = ctk.IntVar(value=0)
-
-        # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-        def account1():
-            if acb_va1.get() == 1:
-
-                global teach_frame
-
-                teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                teach_frame.pack()
-                teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                def settings():
-                    settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                    settings_frame.pack(fill="both", expand=True)
-
-                    settings_1 = ctk.CTkFrame(master=settings_frame)
-                    settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                    settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                    settings_label.pack(padx=10, pady=12)
-                    settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                    def change_appearance_mode_event(new_appearance_mode: str):
-                        ctk.set_appearance_mode(new_appearance_mode)
-                        fa = open("appearance.txt", "w")
-                        fa.write(new_appearance_mode)
-                        fa.close()
-
-                    appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                    appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                    appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                               command=change_appearance_mode_event)
-                    appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                    def change_scaling_event(new_scaling: str):
-                        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                        ctk.set_widget_scaling(new_scaling_float)
-                        fs = open('Scale.txt', 'w')
-                        n_scaling = new_scaling.replace("%", "")
-                        fs.write(n_scaling)
-                        fs.close()
-
-                    scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                    scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                    scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                       command=change_scaling_event)
-                    scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                    def destroy_settings():
-                        settings_frame.destroy()
-                        settings_1.destroy()
-                        settings_label.destroy()
-                        appearance_mode_label.destroy()
-                        appearance_mode_option.destroy()
-                        scaling_label.destroy()
-                        scaling_option.destroy()
-                        _save.destroy()
-
-                    _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                          command=destroy_settings)
-                    _save.pack(padx=10, pady=12)
-                    _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                command=settings)
-                settings_button.pack(padx=10, pady=12)
-                settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                _quit.pack(padx=10, pady=12)
-                _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-            else:
-                teach_frame.destroy()
-
-        teach1_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                          variable=acb_va1, onvalue=1, offvalue=0, command=account1)
-        teach1_checkbox.pack()
-        teach1_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-        user1_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-        teach1_label = ctk.CTkLabel(master=frame, text="", image=user1_image)
-        teach1_label.pack()
-        teach1_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
+        class12_label2 = ctk.CTkLabel(master=frame, text="Class 12", font=('Segoe Ui', 35))
+        class12_label2.pack()
+        class12_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
         def view1():
 
-            view1_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view1_label.pack()
-            view1_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-            class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 A", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global teach_frame
-
-                    teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    teach_frame.pack()
-                    teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    teach_frame.destroy()
-
-            teach2_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            teach2_checkbox.pack()
-            teach2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            teach2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            teach2_label.pack()
-            teach2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -2504,129 +1158,45 @@ def ttabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view1_label.destroy()
+                label1.pack_forget()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                teach2_checkbox.destroy()
-                teach2_label.destroy()
-                if acb_va2.get() == 1:
-                    teach_frame.destroy()
-                class11()
+                class12()
 
             view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view1_back.pack(pady=60)
-            view1_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def view2():
+            
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-            view2_label = ctk.CTkLabel(master=frame, text="Timetables", font=('Segoe Ui', 40))
-            view2_label.pack()
-            view2_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-            class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            acb_va2 = ctk.IntVar(value=0)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
 
-            # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-            def account2():
-                if acb_va2.get() == 1:
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
 
-                    global teach_frame
-
-                    teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-                    teach_frame.pack()
-                    teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-                    def settings():
-                        settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                        settings_frame.pack(fill="both", expand=True)
-
-                        settings_1 = ctk.CTkFrame(master=settings_frame)
-                        settings_1.pack(pady=20, padx=60, fill="both", expand=True)
-
-                        settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                        settings_label.pack(padx=10, pady=12)
-                        settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                        def change_appearance_mode_event(new_appearance_mode: str):
-                            ctk.set_appearance_mode(new_appearance_mode)
-                            fa = open("appearance.txt", "w")
-                            fa.write(new_appearance_mode)
-                            fa.close()
-
-                        appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:")
-                        appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                        appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                                   command=change_appearance_mode_event)
-                        appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                        def change_scaling_event(new_scaling: str):
-                            new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                            ctk.set_widget_scaling(new_scaling_float)
-                            fs = open('Scale.txt', 'w')
-                            n_scaling = new_scaling.replace("%", "")
-                            fs.write(n_scaling)
-                            fs.close()
-
-                        scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:")
-                        scaling_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-                        scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                           command=change_scaling_event)
-                        scaling_option.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-
-                        def destroy_settings():
-                            settings_frame.destroy()
-                            settings_1.destroy()
-                            settings_label.destroy()
-                            appearance_mode_label.destroy()
-                            appearance_mode_option.destroy()
-                            scaling_label.destroy()
-                            scaling_option.destroy()
-                            _save.destroy()
-
-                        _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15),
-                                              command=destroy_settings)
-                        _save.pack(padx=10, pady=12)
-                        _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-                    settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                                    command=settings)
-                    settings_button.pack(padx=10, pady=12)
-                    settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-                    _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-                    _quit.pack(padx=10, pady=12)
-                    _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-                else:
-                    teach_frame.destroy()
-
-            teach2_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                              variable=acb_va2, onvalue=1, offvalue=0, command=account2)
-            teach2_checkbox.pack()
-            teach2_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-            user2_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-            teach2_label = ctk.CTkLabel(master=frame, text="", image=user2_image)
-            teach2_label.pack()
-            teach2_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
-
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
+            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -2646,108 +1216,82 @@ def ttabview():
 
             text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
             text_name.pack(padx=1, pady=2)
-            text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
             def _back():
-                view2_label.destroy()
+                label1.pack_forget()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
                 tree.destroy()
-                teach2_checkbox.destroy()
-                teach2_label.destroy()
-                if acb_va2.get() == 1:
-                    teach_frame.destroy()
-                class11()
+                class12()
 
             view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
             view2_back.pack(pady=60)
-            view2_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def go_view1():
-            class10_label.destroy()
-            class10_label2.destroy()
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            teach1_checkbox.destroy()
-            teach1_label.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
+            class12_name.destroy()
+            class12_back.destroy()
             view1()
 
         def go_view2():
-            class10_label.destroy()
-            class10_label2.destroy()
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            teach1_label.destroy()
-            teach1_checkbox.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
+            class12_name.destroy()
+            class12_back.destroy()
             view2()
 
-        view1_button = ctk.CTkButton(frame, text="Class 10 A", font=('Segoe Ui', 25), command=go_view1)
+        view1_button = ctk.CTkButton(frame, text="Class 12 A", font=('Segoe Ui', 25), command=go_view1)
         view1_button.pack(padx=10, pady=30)
         view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
 
-        view2_button = ctk.CTkButton(frame, text="Class 10 C", font=('Segoe Ui', 25), command=go_view2)
+        view2_button = ctk.CTkButton(frame, text="Class 12 C", font=('Segoe Ui', 25), command=go_view2)
         view2_button.pack(padx=10, pady=30)
         view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
-        def back10():
-            class10_label.destroy()
-            class10_label2.destroy()
+        def back12():
+            label1.pack_forget()
+            class12_label2.destroy()
             view1_button.destroy()
             view2_button.destroy()
-            class10_name.destroy()
-            class10_back.destroy()
-            teach1_checkbox.destroy()
-            teach1_label.destroy()
-            if acb_va1.get() == 1:
-                teach_frame.destroy()
-            tabview()
+            class12_name.destroy()
+            class12_back.destroy()
+            ttabview()
 
-        class10_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
-        class10_name.pack(padx=1, pady=2)
-        class10_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+        class12_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        class12_name.pack(padx=1, pady=2)
+        class12_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
-        class10_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back10)
-        class10_back.pack(pady=60)
-        class10_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
-    def go_class10():
-        view_label.destroy()
-        view_label2.destroy()
-        view_back.destroy()
-        class10_button.destroy()
-        class11_button.destroy()
-        teach_checkbox.destroy()
-        teach_label.destroy()
-        _name.destroy()
-        if acb_va.get() == 1:
-            teach_frame.destroy()
-        class10()
+        class12_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back12)
+        class12_back.pack(pady=60)
+        class12_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
     def go_class11():
-        view_label.destroy()
+        label1.pack_forget()
         view_label2.destroy()
         view_back.destroy()
-        class10_button.destroy()
         class11_button.destroy()
-        teach_label.destroy()
-        teach_checkbox.destroy()
-        _name.destroy()
-        if acb_va.get() == 1:
-            teach_frame.destroy()
+        class12_button.destroy()
         class11()
 
-    class10_button = ctk.CTkButton(frame, text="Class 10", font=('Segoe Ui', 25), command=go_class10)
-    class10_button.pack(padx=10, pady=30)
-    class10_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+    def go_class12():
+        label1.pack_forget()
+        view_label2.destroy()
+        view_back.destroy()
+        class11_button.destroy()
+        class12_button.destroy()
+        class12()
+      
+    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+    class12_button.pack(padx=10, pady=30)
+    class12_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
 
     class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
     class11_button.pack(padx=10, pady=30)
@@ -2755,116 +1299,29 @@ def ttabview():
 
     _name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     _name.pack(padx=1, pady=2)
-    _name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+    _name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def back():
-        view_label.destroy()
+        label1.pack_forget()
         view_label2.destroy()
         view_back.destroy()
-        class10_button.destroy()
+        class12_button.destroy()
         class11_button.destroy()
-        teach_label.destroy()
-        teach_checkbox.destroy()
         _name.destroy()
-        if acb_va.get() == 1:
-            teach_frame.destroy()
-        tab2()
+        ttab2()
 
     view_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back)
     view_back.pack(pady=60)
-    view_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
+    view_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # to view the present day timetable - Teachers
 def ttabsub():
-    sub_label = ctk.CTkLabel(master=frame, text="Today's Timetables", font=('Segoe Ui', 40))
-    sub_label.pack(padx=20, pady=100)
-    sub_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    acb_va = ctk.IntVar(value=0)
+    frame.pack_configure(fill="both", expand=True)
 
-    # noinspection PyUnboundLocalVariable,PyGlobalUndefined
-    def account():
-        if acb_va.get() == 1:
-
-            global teach_frame
-
-            teach_frame = ctk.CTkFrame(master=frame, width=150, height=100, corner_radius=15)
-            teach_frame.pack()
-            teach_frame.place(relx=0.895, rely=0.08, anchor=ctk.NW)
-
-            def settings():
-                settings_frame = ctk.CTkFrame(master=frame, corner_radius=15)
-                settings_frame.pack(fill="both", expand=True)
-
-                settings_1 = ctk.CTkFrame(master=settings_frame, corner_radius=30)
-                settings_1.pack(pady=60, padx=550, fill="both", expand=True)
-
-                settings_label = ctk.CTkLabel(master=settings_1, text="Settings", font=('Segoe Ui', 55))
-                settings_label.pack(padx=10, pady=12)
-                settings_label.place(relx=0.5, rely=0.08, anchor=ctk.N)
-
-                def change_appearance_mode_event(new_appearance_mode: str):
-                    ctk.set_appearance_mode(new_appearance_mode)
-                    fa = open("appearance.txt", "w")
-                    fa.write(new_appearance_mode)
-                    fa.close()
-
-                appearance_mode_label = ctk.CTkLabel(master=settings_1, text="Appearance Mode:", font=('Segoe Ui', 20))
-                appearance_mode_label.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
-                appearance_mode_option = ctk.CTkOptionMenu(settings_1, values=["Dark", "Light", "System"],
-                                                           command=change_appearance_mode_event, font=('Segoe Ui', 15))
-                appearance_mode_option.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-
-                def change_scaling_event(new_scaling: str):
-                    new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                    ctk.set_widget_scaling(new_scaling_float)
-                    fs = open('Scale.txt', 'w')
-                    n_scaling = new_scaling.replace("%", "")
-                    fs.write(n_scaling)
-                    fs.close()
-
-                scaling_label = ctk.CTkLabel(master=settings_1, text="UI Scaling:", font=('Segoe Ui', 20))
-                scaling_label.place(relx=0.5, rely=0.55, anchor=ctk.CENTER)
-                scaling_option = ctk.CTkOptionMenu(master=settings_1, values=["100%", "110%", "120%"],
-                                                   command=change_scaling_event, font=('Segoe Ui', 15))
-                scaling_option.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
-
-                def destroy_settings():
-                    settings_frame.destroy()
-                    settings_1.destroy()
-                    settings_label.destroy()
-                    appearance_mode_label.destroy()
-                    appearance_mode_option.destroy()
-                    scaling_label.destroy()
-                    scaling_option.destroy()
-                    _save.destroy()
-
-                _save = ctk.CTkButton(master=settings_1, text="Save", font=('Segoe Ui', 15), command=destroy_settings)
-                _save.pack(padx=10, pady=12)
-                _save.place(relx=0.5, rely=0.8, anchor=ctk.CENTER)
-
-            settings_button = ctk.CTkButton(master=teach_frame, text="Settings", font=('Segoe Ui', 15),
-                                            command=settings)
-            settings_button.pack(padx=10, pady=12)
-            settings_button.place(relx=0.5, rely=0.3, anchor=ctk.CENTER)
-
-            _quit = ctk.CTkButton(master=teach_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
-            _quit.pack(padx=10, pady=12)
-            _quit.place(relx=0.5, rely=0.7, anchor=ctk.CENTER)
-        else:
-            teach_frame.destroy()
-
-    teach_checkbox = ctk.CTkCheckBox(master=frame, text='Teacher', corner_radius=5, font=('Segoe Ui', 21),
-                                     variable=acb_va, onvalue=1, offvalue=0, command=account)
-    teach_checkbox.pack()
-    teach_checkbox.place(relx=0.915, rely=0.031, anchor=ctk.NW)
-
-    user_image = ctk.CTkImage(Image.open("User.png"), size=(32, 32))
-
-    teach_label = ctk.CTkLabel(master=frame, text="", image=user_image)
-    teach_label.pack()
-    teach_label.place(relx=0.91, rely=0.03, anchor=ctk.NW)
+    label1.configure(text="Today's Timetables")
+    label1.pack(padx=20, pady=100)
+    label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
     wip_label.pack(padx=20, pady=100)
@@ -2876,10 +1333,10 @@ def ttabsub():
 
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
-    text_name.place(relx=0.065, rely=0.96, anchor=ctk.NE)
+    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def _back():
-        sub_label.destroy()
+        label1.pack_forget()
         sub_back.destroy()
         wip_label.destroy()
         wip_label2.destroy()
@@ -2888,25 +1345,27 @@ def ttabsub():
 
     sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
     sub_back.pack(pady=60)
-    sub_back.place(relx=0.89, rely=0.95, anchor=ctk.NW)
-
+    sub_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # to check login
 def login():
+
     fp = open('login_remember_admin.txt', 'r')
     rl = fp.read()
-    fp2 = open('login remember teach.txt', 'r')
+    fp2 = open('login_remember_teach.txt', 'r')
     rl2 = fp2.read()
     if rl == "true":
         tab2()
+        account()
     elif rl2 == "true":
         ttab2()
+        taccount()
     else:
         tab1()
 
-
 # starting of the program
 def starting():
+
     heading = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 45))
     heading.pack(padx=10, pady=10)
     heading.place(relx=0.5, rely=0.08, anchor=ctk.N)
@@ -2937,10 +1396,9 @@ def starting():
     ebutton.pack(padx=10, pady=10)
     ebutton.place(relx=0.5, rely=0.5, anchor=ctk.S)
 
-    _quit = ctk.CTkButton(frame, text="Quit", font=('Segoe Ui', 22), command=exit)
+    _quit = ctk.CTkButton(frame, text="Quit", font=('Segoe Ui', 22), command=quit)
     _quit.pack(padx=10, pady=10)
     _quit.place(relx=0.5, rely=0.52, anchor=ctk.N)
-
 
 starting()
 

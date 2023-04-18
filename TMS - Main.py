@@ -2,30 +2,32 @@
 
 # Importing required modules
 import customtkinter as ctk
-import tkinter
 from tkinter import ttk
-from PIL import ImageTk
 from PIL import Image
-import openpyxl
+import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # importing the setting of the program
 fam = open("appearance.txt", "r")
 appearance = fam.read()
 fam.close()
 
-# setting the theme of the program
+# setting the theme of the program``
 ctk.set_appearance_mode(appearance)
 ctk.set_default_color_theme("green")
 
 # making the program fullscreen only
 root = ctk.CTk()
 root.title("TMS")
-root.iconbitmap("clock-1.png")
+root.iconbitmap("TMS.ico")
+ 
+# to set the program to fullscreen only
 # root.overrideredirect(True)
 # root.attributes('-fullscreen', True)
 
-width = int((root.winfo_screenwidth()) * 0.75)
-height = int((root.winfo_screenheight()) * 0.8)
+width = int((root.winfo_screenwidth()) * 0.95)
+height = int((root.winfo_screenheight()) * 0.85)
 
 wingeo = "{0}x{1}".format(width, height)
 root.minsize(width, height)
@@ -42,6 +44,9 @@ def create_frame():
     frame.pack(fill="both", expand=True)
 
 create_frame()
+
+def quit():
+    root.destroy()
 
 # dev team name x_x
 name = "The Mallus"
@@ -60,6 +65,8 @@ def account():
 
     acc_frame_margin = 16
     acc_frame_padding = 8
+
+    global acc_frame
 
     acc_frame = ctk.CTkFrame(master=frame, height=45, corner_radius=10, fg_color="#383838")
     acc_frame.pack(side=ctk.TOP, anchor=ctk.E, padx=acc_frame_margin, pady=acc_frame_margin)
@@ -99,7 +106,7 @@ def account():
 
     logout1 = ctk.CTkButton(master=dropdown_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
 
-    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
+    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=quit)
 
     def place_dropdown():
         dropdown_frame.pack(side=ctk.TOP, anchor=ctk.NE, padx=acc_frame_margin)
@@ -117,9 +124,6 @@ def account():
         nonlocal is_dropdown_open
         destroy_dropdown() if is_dropdown_open else place_dropdown()
         is_dropdown_open = not is_dropdown_open
-
-    # user_icon = ctk.CTkLabel(master=acc_frame, text="", image=user_image)
-    # user_icon.pack(side=ctk.LEFT, padx=acc_frame_padding)
 
     user_button = ctk.CTkButton(master=acc_frame, image=user_image, text="  Admin", font=('Segoe Ui', 18),
                                 fg_color="#383838", hover_color="#383838",
@@ -161,7 +165,7 @@ def taccount():
                                         )
 
     def logout():
-        fh = open('login_remember_admin.txt', 'w')
+        fh = open('login_remember_teach.txt', 'w')
         str2 = "false"
         print(str2)
         fh.write(str2)
@@ -174,7 +178,7 @@ def taccount():
 
     logout1 = ctk.CTkButton(master=dropdown_frame, text="Logout", font=('Segoe Ui', 15), command=logout)
 
-    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=exit)
+    _quit = ctk.CTkButton(master=dropdown_frame, text="Quit", font=('Segoe Ui', 15), command=quit)
 
     def place_dropdown():
         dropdown_frame.pack(side=ctk.TOP, anchor=ctk.NE, padx=acc_frame_margin)
@@ -212,18 +216,15 @@ def tab1():
     label.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     frame1 = ctk.CTkFrame(master=frame, width=320, height=360, corner_radius=20)
-    frame1.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
+    frame1.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
     label1 = ctk.CTkLabel(master=frame1, text="Log into your Account", font=('Segoe Ui', 25))
-    label1.pack()
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
     entry1 = ctk.CTkEntry(master=frame1, width=250, placeholder_text="Username", font=('Segoe Ui', 17))
-    entry1.pack(padx=10, pady=12)
     entry1.place(relx=0.5, rely=login_form_y - 0.08, anchor=ctk.CENTER)
 
     entry2 = ctk.CTkEntry(master=frame1, width=250, placeholder_text="Password", show="*", font=('Segoe Ui', 17))
-    entry2.pack(padx=10, pady=12)
     entry2.place(relx=0.5, rely=login_form_y + 0.07, anchor=ctk.CENTER)
 
     cb_va = ctk.IntVar(value=0)
@@ -336,7 +337,7 @@ def tab1():
     cbutton.pack(padx=10, pady=12)
     cbutton.place(relx=0.5, rely=login_form_y + 0.43, anchor=ctk.CENTER)
 
-    _quit = ctk.CTkButton(master=frame, text="Quit", font=('Segoe Ui', 15), command=exit)
+    _quit = ctk.CTkButton(master=frame, text="Quit", font=('Segoe Ui', 15), command=quit)
     _quit.pack()
     _quit.place(relx=0.89, rely=0.95, anchor=ctk.NW)
 
@@ -350,7 +351,7 @@ def tab2():
 
     global label1
 
-    label1.configure(text="Time Management System")
+    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 45))
     label1.pack(fill="both", expand=True)
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
@@ -417,14 +418,21 @@ def tabview():
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -468,15 +476,21 @@ def tabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.title['Class 11 C']
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -570,14 +584,21 @@ def tabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -621,15 +642,21 @@ def tabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.title['Class 11 C']
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -784,24 +811,80 @@ def tabman():
 # to substitute absent teachers
 def tabsub():
 
-    frame.pack_configure(fill="both", expand=True)
-
     label1.configure(text="Substitute Absent Teachers")
-    label1.pack(padx=20, pady=100)
-    label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
-    wip_label.pack(padx=20, pady=100)
-    wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+    checkbox_frame = ctk.CTkFrame(master=frame, height=300, width=200, corner_radius=15, fg_color="#383838")
+    checkbox_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
+    checkBoxes = []
+
+    # get list of teachers
+    with open('Teachers.json', 'r') as file:
+        getTeachers = json.load(file)
+        
+        Teachers = {}
+
+        # get the checkbox output as true or false and mark the teacher present or absent
+        def check_login(teacher, state):
+            if state.get():
+                Teachers[teacher] = 'Present'
+            else:
+                Teachers[teacher] = 'Absent'
+            print("{teacher}: {state}".format(teacher=teacher, state=Teachers[teacher]))
+            
+        # create instance of checkbox for each teacher
+        for teacher in getTeachers:
+            
+            Teachers[teacher] = 'Absent'
+            
+            teacher_state = ctk.BooleanVar()
+            
+            checkBoxes.append(ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), variable=teacher_state,
+                                    command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state)))
+
+    # pack all checkboxes
+    for checkbox in checkBoxes:
+        checkbox.pack(side=ctk.LEFT)
+        checkbox.pack(padx=10, pady=10)
+        
+    def sub_teacher():
+        label1.configure(text="Substituted Timetable")
+        
+        wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
+        wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        
+        text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+        def sub_back():
+            wip_label.destroy()
+            text_name.destroy()
+            _back.destroy()
+            tabsub()
+
+        _back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=sub_back)
+        _back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+        
+    def next():
+        text_name.destroy()
+        sub_back.destroy()
+        _next.destroy()
+        checkbox_frame.destroy()
+        sub_teacher()
+        
+    _next = ctk.CTkButton(master=frame, text="Next", font=('Segoe Ui', 18), command=next)
+    _next.place(relx=0.45, rely=0.6)
+        
     text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     text_name.pack(padx=1, pady=2)
     text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
     def _back():
-        sub_back.destroy()
-        wip_label.destroy()
         text_name.destroy()
+        sub_back.destroy()
+        _next.destroy()
+        checkbox_frame.destroy()
+        label1.destroy()
         tab2()
 
     sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
@@ -814,7 +897,7 @@ def ttab2():
          
     global label1
 
-    label1.configure(text="Time Management System")
+    label1 = ctk.CTkLabel(master=frame, text="Time Management System", font=('Segoe Ui', 45))
     label1.pack(fill="both", expand=True)
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
@@ -873,14 +956,21 @@ def ttabview():
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -924,15 +1014,22 @@ def ttabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
+            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -1026,14 +1123,21 @@ def ttabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 A']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
 
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
@@ -1077,15 +1181,22 @@ def ttabview():
             class_label.pack()
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-            path = "timetable_teachers.xlsx"
-            workbook = openpyxl.load_workbook(path, read_only=True)
-            sheet = workbook['Class 11 B']
-            header = sheet.iter_rows(min_row=1, max_row=1, max_col=9, values_only=True)
-            body = sheet.iter_rows(min_row=2, max_row=6, max_col=9, values_only=True)
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            workbook.close()
-
+            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -1285,7 +1396,7 @@ def starting():
     ebutton.pack(padx=10, pady=10)
     ebutton.place(relx=0.5, rely=0.5, anchor=ctk.S)
 
-    _quit = ctk.CTkButton(frame, text="Quit", font=('Segoe Ui', 22), command=exit)
+    _quit = ctk.CTkButton(frame, text="Quit", font=('Segoe Ui', 22), command=quit)
     _quit.pack(padx=10, pady=10)
     _quit.place(relx=0.5, rely=0.52, anchor=ctk.N)
 
