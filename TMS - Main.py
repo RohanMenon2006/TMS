@@ -485,12 +485,13 @@ def tabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.title['Class 11 C']
+            sheet = workbook.get_worksheet(1)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
+            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
@@ -593,7 +594,7 @@ def tabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.get_worksheet(1)
+            sheet = workbook.get_worksheet(0)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
@@ -651,7 +652,7 @@ def tabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.title['Class 11 C']
+            sheet = workbook.get_worksheet(1)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
