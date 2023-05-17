@@ -970,6 +970,7 @@ def tabsub():
         sub_back.destroy()
         _next.destroy()
         checkbox_frame.destroy()
+        checkboxes_wrapper.destroy()
         label1.destroy()
         tab2()
 
