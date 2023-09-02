@@ -1,5 +1,5 @@
 """code to take teacher attendance"""
-'''made by Rohan, modified and improved by his brother X_X'''
+'''made by Rohan, modified and improved by his brother )_)'''
 
 import customtkinter as ctk
 import json

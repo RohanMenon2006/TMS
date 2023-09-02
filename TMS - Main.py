@@ -14,7 +14,7 @@ fam = open("appearance.txt", "r")
 appearance = fam.read()
 fam.close()
 
-# setting the theme of the program``
+# setting the theme of the program
 ctk.set_appearance_mode(appearance)
 ctk.set_default_color_theme("green")
 
@@ -762,18 +762,18 @@ def tabman():
         label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
         
         entry = ctk.CTkEntry(master=frame, height=5, width=250, placeholder_text=" Teacher's Name", font=('Segoe Ui', 20))
-        entry.place(relx=0.5, rely= 0.5, anchor=ctk.CENTER)
+        entry.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
         
         def entry_clear():
             entry.delete(0, ctk.END)
         
         result = ctk.CTkLabel(master=frame, text="", font=('Segoe Ui', 16))
-        result.place(relx=0.5, rely= 0.56, anchor=ctk.CENTER)
+        result.place(relx=0.5, rely=0.56, anchor=ctk.CENTER)
                
         def tadd():
-            file  = open('Teachers.json', 'r')
+            file = open('Teachers.json', 'r')
             Teachers = json.load(file)
-            name = entry.get()        
+            name = entry.get()
         
             try:
                 Teachers.index(name)
@@ -781,7 +781,7 @@ def tabman():
                 result.configure(text="This name already exist")
                 
             except ValueError:
-                file  = open('Teachers.json', 'w')
+                file = open('Teachers.json', 'w')
                 Teachers.append(name)
                 json.dump(Teachers, file)
                 file.flush()
@@ -789,14 +789,14 @@ def tabman():
                 result.configure(master=frame, text="Name added")
                 
         def tremove():
-            file  = open('Teachers.json', 'r')
+            file = open('Teachers.json', 'r')
             Teachers = json.load(file)
             name = entry.get()
             
             try:
                 Teachers.index(name)
                 Teachers.remove(name)
-                file  = open('Teachers.json', 'w')
+                file = open('Teachers.json', 'w')
                 json.dump(Teachers, file)
                 file.flush()
                 entry_clear()
@@ -884,6 +884,9 @@ def tabman():
 def tabsub():
 
     label1.configure(text="Substitute Absent Teachers")
+
+    label2 = ctk.CTkLabel(master=frame, text="Select absent teachers", font=('Segoe Ui', 24))
+    label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
     
     checkboxes_wrapper = ctk.CTkFrame(master=frame, width=200)
 
@@ -892,15 +895,16 @@ def tabsub():
         get_teachers = json.load(file)
         
         Teachers = {}
-        next_button_offset_y = 0
 
         # get the checkbox output as true or false and mark the teacher present or absent
         def check_login(teacher, state):
             if state.get():
-                Teachers[teacher] = 'Present'
-            else:
                 Teachers[teacher] = 'Absent'
+            else:
+                Teachers[teacher] = 'Present'
             print("{teacher}: {state}".format(teacher=teacher, state=Teachers[teacher]))
+            fh = open("Checkbox_State.txt", "w")
+            fh.write(str(Teachers))
             
         checkbox_frames = []
         
@@ -911,11 +915,11 @@ def tabsub():
         
         # create instance of checkbox for each teacher
         for teacher in get_teachers:
-            
-            Teachers[teacher] = 'Absent'
-            
+            0
+            Teachers[teacher] = 'Present'
+
             teacher_state = ctk.BooleanVar()
-            checkbox = ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), variable=teacher_state, command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state))
+            checkbox = ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), width=110, variable=teacher_state, command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state))
             checkbox.pack(side=ctk.LEFT)
                 
             if index % 8 == 0:
