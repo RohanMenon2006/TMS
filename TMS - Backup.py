@@ -6,7 +6,7 @@ from tkinter import ttk
 from PIL import Image
 import json
 import gspread
-import math
+import random
 from oauth2client.service_account import ServiceAccountCredentials
 
 # importing the setting of the program
@@ -14,7 +14,7 @@ fam = open("appearance.txt", "r")
 appearance = fam.read()
 fam.close()
 
-# setting the theme of the program``
+# setting the theme of the program
 ctk.set_appearance_mode(appearance)
 ctk.set_default_color_theme("green")
 
@@ -404,6 +404,9 @@ def tabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -413,6 +416,7 @@ def tabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -459,6 +463,9 @@ def tabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -468,6 +475,7 @@ def tabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -486,7 +494,7 @@ def tabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.get_worksheet(1)
+            sheet = workbook.get_worksheet(0)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
@@ -560,6 +568,10 @@ def tabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        
 
             class_label = ctk.CTkLabel(master=frame, text="Class 12 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -569,6 +581,7 @@ def tabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -587,7 +600,7 @@ def tabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.get_worksheet(0)
+            sheet = workbook.get_worksheet(1)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
@@ -615,6 +628,9 @@ def tabview():
             
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -624,6 +640,7 @@ def tabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -722,11 +739,11 @@ def tabview():
         class12_button.destroy()
         class12()
 
-    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
-    class12_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
-
     class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
-    class11_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+    class11_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+    class12_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
     _name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     _name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
@@ -762,18 +779,18 @@ def tabman():
         label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
         
         entry = ctk.CTkEntry(master=frame, height=5, width=250, placeholder_text=" Teacher's Name", font=('Segoe Ui', 20))
-        entry.place(relx=0.5, rely= 0.5, anchor=ctk.CENTER)
+        entry.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
         
         def entry_clear():
             entry.delete(0, ctk.END)
         
         result = ctk.CTkLabel(master=frame, text="", font=('Segoe Ui', 16))
-        result.place(relx=0.5, rely= 0.56, anchor=ctk.CENTER)
+        result.place(relx=0.5, rely=0.56, anchor=ctk.CENTER)
                
         def tadd():
-            file  = open('Teachers.json', 'r')
+            file = open('Teachers.json', 'r')
             Teachers = json.load(file)
-            name = entry.get()        
+            name = entry.get()
         
             try:
                 Teachers.index(name)
@@ -781,7 +798,7 @@ def tabman():
                 result.configure(text="This name already exist")
                 
             except ValueError:
-                file  = open('Teachers.json', 'w')
+                file = open('Teachers.json', 'w')
                 Teachers.append(name)
                 json.dump(Teachers, file)
                 file.flush()
@@ -789,14 +806,14 @@ def tabman():
                 result.configure(master=frame, text="Name added")
                 
         def tremove():
-            file  = open('Teachers.json', 'r')
+            file = open('Teachers.json', 'r')
             Teachers = json.load(file)
             name = entry.get()
             
             try:
                 Teachers.index(name)
                 Teachers.remove(name)
-                file  = open('Teachers.json', 'w')
+                file = open('Teachers.json', 'w')
                 json.dump(Teachers, file)
                 file.flush()
                 entry_clear()
@@ -884,6 +901,9 @@ def tabman():
 def tabsub():
 
     label1.configure(text="Substitute Absent Teachers")
+
+    label2 = ctk.CTkLabel(master=frame, text="Select absent teachers", font=('Segoe Ui', 24))
+    label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
     
     checkboxes_wrapper = ctk.CTkFrame(master=frame, width=200)
 
@@ -892,15 +912,16 @@ def tabsub():
         get_teachers = json.load(file)
         
         Teachers = {}
-        next_button_offset_y = 0
 
         # get the checkbox output as true or false and mark the teacher present or absent
         def check_login(teacher, state):
             if state.get():
-                Teachers[teacher] = 'Present'
-            else:
                 Teachers[teacher] = 'Absent'
+            else:
+                Teachers[teacher] = 'Present'
             print("{teacher}: {state}".format(teacher=teacher, state=Teachers[teacher]))
+            fh = open("Checkbox_State.txt", "w")
+            fh.write(str(Teachers))
             
         checkbox_frames = []
         
@@ -911,11 +932,11 @@ def tabsub():
         
         # create instance of checkbox for each teacher
         for teacher in get_teachers:
-            
-            Teachers[teacher] = 'Absent'
-            
+            0
+            Teachers[teacher] = 'Present'
+
             teacher_state = ctk.BooleanVar()
-            checkbox = ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), variable=teacher_state, command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state))
+            checkbox = ctk.CTkCheckBox(master=checkbox_frame, text=teacher, font=('Century Gothic', 20), width=110, variable=teacher_state, command=lambda teacher=teacher, state=teacher_state: check_login(teacher, state))
             checkbox.pack(side=ctk.LEFT)
                 
             if index % 8 == 0:
@@ -936,16 +957,623 @@ def tabsub():
     def sub_teacher():
         label1.configure(text="Substituted Timetable")
         
-        wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
-        wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        view_label2 = ctk.CTkLabel(master=frame, text="Pick a class", font=('Segoe Ui', 35))
+        view_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
+        
+        def class11():
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+
+            class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
+            class11_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
+
+            def view1():
+                label1.configure(text="Substituted Timetable")
+                label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+                
+                load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+                load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
+                class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+                
+                text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+                text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+                def _back():
+                    label1.pack_forget()
+                    load_label.destroy()
+                    view1_back.destroy()
+                    text_name.destroy()
+                    class_label.destroy()
+                    tree.destroy()
+                    class11()
+
+                view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+                view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+                scope = {
+                    'https://www.googleapis.com/auth/spreadsheets',
+                    'https://www.googleapis.com/auth/drive'    
+                }
+
+                creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+                file = gspread.authorize(creds)
+                workbook = file.open("TMS - Timetable")
+                sheet = workbook.get_worksheet(0)
+
+                header = sheet.get("A1:I1")
+                body = sheet.get("A2:I6")
+
+                file = gspread.authorize(creds)
+                workbook2 = file.open("TMS - Timetable Sub")
+
+                sheet2 = workbook2.get_worksheet(0)
+                sheet2.clear()
+
+                sheet2.update('A1:I1', header)
+                sheet2.update('A2:I6', body)
+
+                header2 = sheet2.get("A1:I1")
+                body2 = sheet2.get("A2:I6")
+
+                print(header2)
+                for d in body2:
+                    print(d,"\n")
+
+                fh = open("Checkbox_State.json", "r")
+                teacher_state = json.load(fh)
+
+                ateacher = []
+                pteacher = []
+                for k in teacher_state:
+                    avalues = (teacher_state[k])
+                    if avalues == 'Absent':
+                        ateacher.append(k)
+                    else:
+                        pteacher.append(k)
+
+                print(ateacher)
+
+                fn = open("Subject.json", "r")
+                subjects = json.load(fn)
+
+                sub = []
+                for i in subjects:
+                    for o in ateacher:
+                        if i == o:
+                            sub.append(subjects[i])
+
+                print(sub)
+
+                for q in sub:
+                    cell_list = sheet2.findall(q)
+                    
+                for u in cell_list:
+                    for p in sub:
+                        cell = sheet2.find(p)
+                        if cell is None:
+                            break
+                        else:
+                            cells = "R%sC%s" % (cell.row, cell.col)
+                            print(cells)
+                            
+                            rand_idx = int(random.random() * len(pteacher))
+                            random_num = pteacher[rand_idx]
+                            rteacher = str(random_num)
+                            rsub = subjects[rteacher]
+                            print("Random selected: " + rteacher)
+                        
+                            sheet2.update(cells, rsub)
+                            
+                header = sheet2.get("A1:I1")
+                body = sheet2.get("A2:I6")
+                header = [r for r in header]
+                body = [r for r in body]
+
+                style = ttk.Style()
+                style.configure("Treeview", rowheight=60)
+                style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+                tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+                tree.pack(padx=10, pady=10, fill='x')
+                tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+                for i in header[0]:
+                    tree.column(i, anchor=ctk.CENTER)
+                    tree.heading(i, text=i)
+
+                for i in body:
+                    tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+            def view2():
+                label1.configure(text="Substituted Timetable")
+                label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+                
+                load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+                load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
+                class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+                
+                text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+                text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+                def _back():
+                    label1.pack_forget()
+                    load_label.destroy()
+                    view1_back.destroy()
+                    text_name.destroy()
+                    class_label.destroy()
+                    tree.destroy()
+                    class11()
+
+                view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+                view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+                scope = {
+                    'https://www.googleapis.com/auth/spreadsheets',
+                    'https://www.googleapis.com/auth/drive'    
+                }
+
+                creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+                file = gspread.authorize(creds)
+                workbook = file.open("TMS - Timetable")
+                sheet = workbook.get_worksheet(0)
+
+                header = sheet.get("A1:I1")
+                body = sheet.get("A2:I6")
+
+                file = gspread.authorize(creds)
+                workbook2 = file.open("TMS - Timetable Sub")
+
+                sheet2 = workbook2.get_worksheet(0)
+                sheet2.clear()
+
+                sheet2.update('A1:I1', header)
+                sheet2.update('A2:I6', body)
+
+                header2 = sheet2.get("A1:I1")
+                body2 = sheet2.get("A2:I6")
+
+                print(header2)
+                for d in body2:
+                    print(d,"\n")
+
+                fh = open("Checkbox_State.json", "r")
+                teacher_state = json.load(fh)
+
+                ateacher = []
+                pteacher = []
+                for k in teacher_state:
+                    avalues = (teacher_state[k])
+                    if avalues == 'Absent':
+                        ateacher.append(k)
+                    else:
+                        pteacher.append(k)
+
+                print(ateacher)
+
+                fn = open("Subject.json", "r")
+                subjects = json.load(fn)
+
+                sub = []
+                for i in subjects:
+                    for o in ateacher:
+                        if i == o:
+                            sub.append(subjects[i])
+
+                print(sub)
+
+                for q in sub:
+                    cell_list = sheet2.findall(q)
+                    
+                for u in cell_list:
+                    for p in sub:
+                        cell = sheet2.find(p)
+                        if cell is None:
+                            break
+                        else:
+                            cells = "R%sC%s" % (cell.row, cell.col)
+                            print(cells)
+                            
+                            rand_idx = int(random.random() * len(pteacher))
+                            random_num = pteacher[rand_idx]
+                            rteacher = str(random_num)
+                            rsub = subjects[rteacher]
+                            print("Random selected: " + rteacher)
+                        
+                            sheet2.update(cells, rsub)
+                            
+                header = sheet2.get("A1:I1")
+                body = sheet2.get("A2:I6")
+                header = [r for r in header]
+                body = [r for r in body]
+
+                style = ttk.Style()
+                style.configure("Treeview", rowheight=60)
+                style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+                tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+                tree.pack(padx=10, pady=10, fill='x')
+                tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+                for i in header[0]:
+                    tree.column(i, anchor=ctk.CENTER)
+                    tree.heading(i, text=i)
+
+                for i in body:
+                    tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+            
+            def go_view1():
+                label1.pack_forget()
+                class11_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class11_name.destroy()
+                class11_back.destroy()
+                view1()
+
+            def go_view2():
+                label1.pack_forget()
+                class11_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class11_name.destroy()
+                class11_back.destroy()
+                view2()
+
+            view1_button = ctk.CTkButton(frame, text="Class 11 A", font=('Segoe Ui', 25), command=go_view1)
+            view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+            view2_button = ctk.CTkButton(frame, text="Class 11 C", font=('Segoe Ui', 25), command=go_view2)
+            view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+
+            def back11():
+                label1.pack_forget()
+                class11_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class11_name.destroy()
+                class11_back.destroy()
+                tabsub()
+
+            class11_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            class11_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            class11_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back11)
+            class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+        def class12():
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+
+            class12_label2 = ctk.CTkLabel(master=frame, text="Class 12", font=('Segoe Ui', 35))
+            class12_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
+            
+            def view1():
+                label1.configure(text="Substituted Timetable")
+                label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+                
+                load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+                load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                class_label = ctk.CTkLabel(master=frame, text="Class 12 A", font=('Segoe Ui', 35))
+                class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+
+                text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+                text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+                def _back():
+                    label1.pack_forget()
+                    load_label.destroy()
+                    view1_back.destroy()
+                    text_name.destroy()
+                    class_label.destroy()
+                    tree.destroy()
+                    class11()
+
+                view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+                view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+                scope = {
+                    'https://www.googleapis.com/auth/spreadsheets',
+                    'https://www.googleapis.com/auth/drive'    
+                }
+
+                creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+                file = gspread.authorize(creds)
+                workbook = file.open("TMS - Timetable")
+                sheet = workbook.get_worksheet(1)
+
+                header = sheet.get("A1:I1")
+                body = sheet.get("A2:I6")
+
+                file = gspread.authorize(creds)
+                workbook2 = file.open("TMS - Timetable Sub")
+
+                sheet2 = workbook2.get_worksheet(1)
+                sheet2.clear()
+
+                sheet2.update('A1:I1', header)
+                sheet2.update('A2:I6', body)
+
+                header2 = sheet2.get("A1:I1")
+                body2 = sheet2.get("A2:I6")
+
+                print(header2)
+                for d in body2:
+                    print(d,"\n")
+
+                fh = open("Checkbox_State.json", "r")
+                teacher_state = json.load(fh)
+
+                ateacher = []
+                pteacher = []
+                for k in teacher_state:
+                    avalues = (teacher_state[k])
+                    if avalues == 'Absent':
+                        ateacher.append(k)
+                    else:
+                        pteacher.append(k)
+
+                print(ateacher)
+
+                fn = open("Subject.json", "r")
+                subjects = json.load(fn)
+
+                sub = []
+                for i in subjects:
+                    for o in ateacher:
+                        if i == o:
+                            sub.append(subjects[i])
+
+                print(sub)
+
+                for q in sub:
+                    cell_list = sheet2.findall(q)
+                    
+                for u in cell_list:
+                    for p in sub:
+                        cell = sheet2.find(p)
+                        if cell is None:
+                            break
+                        else:
+                            cells = "R%sC%s" % (cell.row, cell.col)
+                            print(cells)
+                            
+                            rand_idx = int(random.random() * len(pteacher))
+                            random_num = pteacher[rand_idx]
+                            rteacher = str(random_num)
+                            rsub = subjects[rteacher]
+                            print("Random selected: " + rteacher)
+                        
+                            sheet2.update(cells, rsub)
+                            
+                header = sheet2.get("A1:I1")
+                body = sheet2.get("A2:I6")
+                header = [r for r in header]
+                body = [r for r in body]
+
+                style = ttk.Style()
+                style.configure("Treeview", rowheight=60)
+                style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+                tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+                tree.pack(padx=10, pady=10, fill='x')
+                tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+                for i in header[0]:
+                    tree.column(i, anchor=ctk.CENTER)
+                    tree.heading(i, text=i)
+
+                for i in body:
+                    tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+            def view2():
+                label1.configure(text="Substituted Timetable")
+                label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+                
+                load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+                load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
+                class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+
+                text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+                text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+                def _back():
+                    label1.pack_forget()
+                    load_label.destroy()
+                    view1_back.destroy()
+                    text_name.destroy()
+                    class_label.destroy()
+                    tree.destroy()
+                    class11()
+
+                view1_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+                view1_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+                scope = {
+                    'https://www.googleapis.com/auth/spreadsheets',
+                    'https://www.googleapis.com/auth/drive'    
+                }
+
+                creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+                file = gspread.authorize(creds)
+                workbook = file.open("TMS - Timetable")
+                sheet = workbook.get_worksheet(1)
+
+                header = sheet.get("A1:I1")
+                body = sheet.get("A2:I6")
+
+                file = gspread.authorize(creds)
+                workbook2 = file.open("TMS - Timetable Sub")
+
+                sheet2 = workbook2.get_worksheet(1)
+                sheet2.clear()
+
+                sheet2.update('A1:I1', header)
+                sheet2.update('A2:I6', body)
+
+                header2 = sheet2.get("A1:I1")
+                body2 = sheet2.get("A2:I6")
+
+                print(header2)
+                for d in body2:
+                    print(d,"\n")
+
+                fh = open("Checkbox_State.json", "r")
+                teacher_state = json.load(fh)
+
+                ateacher = []
+                pteacher = []
+                for k in teacher_state:
+                    avalues = (teacher_state[k])
+                    if avalues == 'Absent':
+                        ateacher.append(k)
+                    else:
+                        pteacher.append(k)
+
+                print(ateacher)
+
+                fn = open("Subject.json", "r")
+                subjects = json.load(fn)
+
+                sub = []
+                for i in subjects:
+                    for o in ateacher:
+                        if i == o:
+                            sub.append(subjects[i])
+
+                print(sub)
+
+                for q in sub:
+                    cell_list = sheet2.findall(q)
+                    
+                for u in cell_list:
+                    for p in sub:
+                        cell = sheet2.find(p)
+                        if cell is None:
+                            break
+                        else:
+                            cells = "R%sC%s" % (cell.row, cell.col)
+                            print(cells)
+                            
+                            rand_idx = int(random.random() * len(pteacher))
+                            random_num = pteacher[rand_idx]
+                            rteacher = str(random_num)
+                            rsub = subjects[rteacher]
+                            print("Random selected: " + rteacher)
+                        
+                            sheet2.update(cells, rsub)
+                            
+                header = sheet2.get("A1:I1")
+                body = sheet2.get("A2:I6")
+                header = [r for r in header]
+                body = [r for r in body]
+
+                style = ttk.Style()
+                style.configure("Treeview", rowheight=60)
+                style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+                tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+                tree.pack(padx=10, pady=10, fill='x')
+                tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+                tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+                for i in header[0]:
+                    tree.column(i, anchor=ctk.CENTER)
+                    tree.heading(i, text=i)
+
+                for i in body:
+                    tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+    
+            def go_view1():
+                label1.pack_forget()
+                class12_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class12_name.destroy()
+                class12_back.destroy()
+                view1()
+
+            def go_view2():
+                label1.pack_forget()
+                class12_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class12_name.destroy()
+                class12_back.destroy()
+                view2()
+
+            view1_button = ctk.CTkButton(frame, text="Class 12 A", font=('Segoe Ui', 25), command=go_view1)
+            view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+            view2_button = ctk.CTkButton(frame, text="Class 12 C", font=('Segoe Ui', 25), command=go_view2)
+            view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+
+            def back12():
+                label1.pack_forget()
+                class12_label2.destroy()
+                view1_button.destroy()
+                view2_button.destroy()
+                class12_name.destroy()
+                class12_back.destroy()
+                tabsub()
+
+            class12_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            class12_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            class12_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back12)
+            class12_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+        
+        def go_class11():
+            label1.pack_forget()
+            view_label2.destroy()
+            _back1.destroy()
+            text_name1.destroy()
+            class11_button.destroy()
+            class12_button.destroy()
+            class11()
+            
+        def go_class12():
+            label1.pack_forget()
+            view_label2.destroy()
+            _back1.destroy()
+            text_name1.destroy()
+            class11_button.destroy()
+            class12_button.destroy()
+            class12()
+        
+        class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
+        class11_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+        
+        class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+        class12_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
         
         text_name1 = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
         text_name1.place(relx=0.005, rely=0.96, anchor=ctk.NW)
 
         def sub_back1():
-            wip_label.destroy()
-            text_name1.destroy()
+            label1.pack_forget()
+            view_label2.destroy()
             _back1.destroy()
+            text_name1.destroy()
+            class11_button.destroy()
+            class12_button.destroy()
             tabsub()
 
         _back1 = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=sub_back1)
@@ -954,6 +1582,7 @@ def tabsub():
     def next1():
         text_name.destroy()
         sub_back.destroy()
+        label2.destroy()
         _next.destroy()
         checkbox_frame.destroy()
         checkboxes_wrapper.destroy()
@@ -970,7 +1599,9 @@ def tabsub():
         sub_back.destroy()
         _next.destroy()
         checkbox_frame.destroy()
+        checkboxes_wrapper.destroy()
         label1.destroy()
+        label2.destroy()
         tab2()
 
     sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
@@ -1013,8 +1644,6 @@ def ttab2():
 # to view the timetable - Teachers
 def ttabview():
 
-    frame.pack_configure(fill="both", expand=True)
-    
     label1.configure(text="Timetables")
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
@@ -1033,6 +1662,9 @@ def ttabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -1042,6 +1674,7 @@ def ttabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -1088,6 +1721,9 @@ def ttabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -1097,6 +1733,7 @@ def ttabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -1115,7 +1752,7 @@ def ttabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.get_worksheet(1)
+            sheet = workbook.get_worksheet(0)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
@@ -1189,6 +1826,10 @@ def ttabview():
 
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        
 
             class_label = ctk.CTkLabel(master=frame, text="Class 12 A", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -1198,6 +1839,7 @@ def ttabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view1_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -1216,7 +1858,7 @@ def ttabview():
 
             file = gspread.authorize(creds)
             workbook = file.open("TMS - Timetable")
-            sheet = workbook.get_worksheet(0)
+            sheet = workbook.get_worksheet(1)
             
             header = sheet.get("A1:I1")
             body = sheet.get("A2:I6")
@@ -1238,12 +1880,15 @@ def ttabview():
                 tree.heading(i, text=i)
 
             for i in body:
-                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")  
+                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
 
         def view2():
             
             label1.configure(text="Timetables")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
             class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
@@ -1253,6 +1898,7 @@ def ttabview():
 
             def _back():
                 label1.pack_forget()
+                load_label.destroy()
                 view2_back.destroy()
                 text_name.destroy()
                 class_label.destroy()
@@ -1277,12 +1923,12 @@ def ttabview():
             body = sheet.get("A2:I6")
             header = [r for r in header]
             body = [r for r in body]
-            
             style = ttk.Style()
             style.configure("Treeview", rowheight=60)
             style.configure("Treeview.Heading", font=('Segoe UI', 20))
 
             tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+            tree.pack(padx=10, pady=10, fill='x')
             tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
             tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
@@ -1349,11 +1995,11 @@ def ttabview():
         class12_button.destroy()
         class12()
       
-    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
-    class12_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
-
     class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
-    class11_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+    class11_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+    class12_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
 
     _name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
     _name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
@@ -1373,30 +2019,385 @@ def ttabview():
 # to view the present day timetable - Teachers
 def ttabsub():
 
-    frame.pack_configure(fill="both", expand=True)
-
-    label1.configure(text="Today's Timetables")
+    label1.configure(text="Substituted Timetable")
     label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    wip_label = ctk.CTkLabel(master=frame, text="Work in progress", font=('Segoe Ui', 35))
-    wip_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+    view_label2 = ctk.CTkLabel(master=frame, text="Pick a class", font=('Segoe Ui', 35))
+    view_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
+    # reading the Excel files
 
-    wip_label2 = ctk.CTkLabel(master=frame, text="will be added later on...", font=('Segoe Ui', 20))
-    wip_label2.place(relx=0.5, rely=0.58, anchor=ctk.CENTER)
+    def class11():
+        label1.configure(text="Substituted Timetable")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
-    text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
-    text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+        class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
+        class11_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
 
-    def _back():
+        def view1():
+            
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
+            class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+
+            text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            def _back():
+                label1.pack_forget()
+                load_label.destroy()
+                view2_back.destroy()
+                text_name.destroy()
+                class_label.destroy()
+                tree.destroy()
+                class11()
+
+            view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable Sub")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
+            header = [r for r in header]
+            body = [r for r in body]
+            
+            style = ttk.Style()
+            style.configure("Treeview", rowheight=60)
+            style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+            tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+            tree.pack(padx=10, pady=10, fill='x')
+            tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+            for i in header[0]:
+                tree.column(i, anchor=ctk.CENTER)
+                tree.heading(i, text=i)
+
+            for i in body:
+                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+        def view2():
+
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            class_label = ctk.CTkLabel(master=frame, text="Class 11 C", font=('Segoe Ui', 35))
+            class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+            
+            text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            def _back():
+                label1.pack_forget()
+                load_label.destroy()
+                view2_back.destroy()
+                text_name.destroy()
+                class_label.destroy()
+                tree.destroy()
+                class11()
+
+            view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable Sub")
+            sheet = workbook.get_worksheet(0)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
+            header = [r for r in header]
+            body = [r for r in body]
+            
+            style = ttk.Style()
+            style.configure("Treeview", rowheight=60)
+            style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+            tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+            tree.pack(padx=10, pady=10, fill='x')
+            tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+            for i in header[0]:
+                tree.column(i, anchor=ctk.CENTER)
+                tree.heading(i, text=i)
+
+            for i in body:
+                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+        def go_view1():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            view1()
+
+        def go_view2():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            view2()
+
+        view1_button = ctk.CTkButton(frame, text="Class 11 A", font=('Segoe Ui', 25), command=go_view1)
+        view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+        view2_button = ctk.CTkButton(frame, text="Class 11 C", font=('Segoe Ui', 25), command=go_view2)
+        view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+
+        def back11():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            ttabsub()
+
+        class11_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        class11_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+        class11_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back11)
+        class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+    def class12():
+        label1.configure(text="Substituted Timetable")
+        label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+
+        class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
+        class11_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
+
+        def view1():
+
+            label1.configure(text="Timetables")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
+            class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+            
+            text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            def _back():
+                label1.pack_forget()
+                load_label.destroy()
+                view2_back.destroy()
+                text_name.destroy()
+                class_label.destroy()
+                tree.destroy()
+                class11()
+
+            view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable Sub")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
+            header = [r for r in header]
+            body = [r for r in body]
+            
+            style = ttk.Style()
+            style.configure("Treeview", rowheight=60)
+            style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+            tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+            tree.pack(padx=10, pady=10, fill='x')
+            tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+            for i in header[0]:
+                tree.column(i, anchor=ctk.CENTER)
+                tree.heading(i, text=i)
+
+            for i in body:
+                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+        def view2():
+
+            label1.configure(text="Substituted Timetable")
+            label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
+            
+            load_label = ctk.CTkLabel(master=frame, text="Loading...", font=('Segoe Ui', 35))
+            load_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            class_label = ctk.CTkLabel(master=frame, text="Class 12 C", font=('Segoe Ui', 35))
+            class_label.place(relx=0.5, rely=0.2, anchor=ctk.N)
+            
+            text_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+            text_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+            def _back():
+                label1.pack_forget()
+                load_label.destroy()
+                view2_back.destroy()
+                text_name.destroy()
+                class_label.destroy()
+                tree.destroy()
+                class11()
+
+            view2_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
+            view2_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+            scope = {
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive'    
+            }
+
+            creds = ServiceAccountCredentials.from_json_keyfile_name("secret_key.json", scopes=scope)
+
+            file = gspread.authorize(creds)
+            workbook = file.open("TMS - Timetable Sub")
+            sheet = workbook.get_worksheet(1)
+            
+            header = sheet.get("A1:I1")
+            body = sheet.get("A2:I6")
+            header = [r for r in header]
+            body = [r for r in body]
+            
+            style = ttk.Style()
+            style.configure("Treeview", rowheight=60)
+            style.configure("Treeview.Heading", font=('Segoe UI', 20))
+
+            tree = ttk.Treeview(master=frame, selectmode='browse', show='headings', columns=header[0], height=5)
+            tree.pack(padx=10, pady=10, fill='x')
+            tree.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+            tree.tag_configure("tag_item", font=('Segoe Ui', 12), foreground='black')
+
+            for i in header[0]:
+                tree.column(i, anchor=ctk.CENTER)
+                tree.heading(i, text=i)
+
+            for i in body:
+                tree.insert('', 'end', iid=i[0], values=i, tags="tag_item")
+
+        def go_view1():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            view1()
+
+        def go_view2():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            view2()
+
+        view1_button = ctk.CTkButton(frame, text="Class 11 A", font=('Segoe Ui', 25), command=go_view1)
+        view1_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+        view2_button = ctk.CTkButton(frame, text="Class 11 C", font=('Segoe Ui', 25), command=go_view2)
+        view2_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+
+        def back11():
+            label1.pack_forget()
+            class11_label2.destroy()
+            view1_button.destroy()
+            view2_button.destroy()
+            class11_name.destroy()
+            class11_back.destroy()
+            ttabsub()
+
+        class11_name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+        class11_name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+        class11_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back11)
+        class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+
+    def go_class11():
         label1.pack_forget()
-        sub_back.destroy()
-        wip_label.destroy()
-        wip_label2.destroy()
-        text_name.destroy()
+        view_label2.destroy()
+        view_back.destroy()
+        class11_button.destroy()
+        class12_button.destroy()
+        class11()
+
+    def go_class12():
+        label1.pack_forget()
+        view_label2.destroy()
+        view_back.destroy()
+        class11_button.destroy()
+        class12_button.destroy()
+        class12()
+      
+    class11_button = ctk.CTkButton(frame, text="Class 11", font=('Segoe Ui', 25), command=go_class11)
+    class11_button.place(relx=0.5, rely=0.45, anchor=ctk.N)
+
+    class12_button = ctk.CTkButton(frame, text="Class 12", font=('Segoe Ui', 25), command=go_class12)
+    class12_button.place(relx=0.5, rely=0.55, anchor=ctk.N)
+
+    _name = ctk.CTkLabel(master=frame, height=5, text=name, font=('Segoe Ui', 18))
+    _name.place(relx=0.005, rely=0.96, anchor=ctk.NW)
+
+    def back():
+        label1.pack_forget()
+        view_label2.destroy()
+        view_back.destroy()
+        class12_button.destroy()
+        class11_button.destroy()
+        _name.destroy()
         ttab2()
 
-    sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
-    sub_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
+    view_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=back)
+    view_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
 # to check login
 def login():
