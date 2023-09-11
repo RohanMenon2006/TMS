@@ -41,8 +41,9 @@ sheet2.update('A2:I6', body)
 header2 = sheet2.get("A1:I1")
 body2 = sheet2.get("A2:I6")
 
-# print(header2)
-# print(body2)
+print(header2)
+for d in body2:
+    print(d,"\n")
 
 fh = open("Checkbox_State.json", "r")
 teacher_state = json.load(fh)
@@ -75,8 +76,7 @@ for q in sub:
 for u in cell_list:
     for p in sub:
         cell = sheet2.find(p)
-        print(cell)
-        if cell == None:
+        if cell is None:
             break
         else:
             cells = "R%sC%s" % (cell.row, cell.col)
@@ -85,11 +85,11 @@ for u in cell_list:
             rand_idx = int(random.random() * len(pteacher))
             random_num = pteacher[rand_idx]
             rteacher = str(random_num)
+            rsub = subjects[rteacher]
             print("Random selected: " + rteacher)
-            
-            sheet2.update(cells, rteacher)
-            print("continue")
-            
+        
+            sheet2.update(cells, rsub)
+        
 header2 = sheet2.get("A1:I1")
 body2 = sheet2.get("A2:I6")
 
