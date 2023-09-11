@@ -2,6 +2,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
+import random
 
 # Code to give python access to Google sheets, (mandatory)
 scope = {
@@ -47,10 +48,13 @@ fh = open("Checkbox_State.json", "r")
 teacher_state = json.load(fh)
 
 ateacher = []
+pteacher = []
 for k in teacher_state:
     avalues = (teacher_state[k])
     if avalues == 'Absent':
         ateacher.append(k)
+    else:
+        pteacher.append(k)
 
 print(ateacher)
 
@@ -65,4 +69,30 @@ for i in subjects:
 
 print(sub)
 
-# remove the subs from gsheetsub and add random sub
+for q in sub:
+    cell_list = sheet2.findall(q)
+    
+for u in cell_list:
+    for p in sub:
+        cell = sheet2.find(p)
+        print(cell)
+        if cell == None:
+            break
+        else:
+            cells = "R%sC%s" % (cell.row, cell.col)
+            print(cells)
+            
+            rand_idx = int(random.random() * len(pteacher))
+            random_num = pteacher[rand_idx]
+            rteacher = str(random_num)
+            print("Random selected: " + rteacher)
+            
+            sheet2.update(cells, rteacher)
+            print("continue")
+            
+header2 = sheet2.get("A1:I1")
+body2 = sheet2.get("A2:I6")
+
+print(header2)
+for d in body2:
+    print(d,"\n")
