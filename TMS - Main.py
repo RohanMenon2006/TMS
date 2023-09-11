@@ -961,7 +961,7 @@ def tabsub():
         view_label2.place(relx=0.5, rely=0.2, anchor=ctk.N)
         
         def class11():
-            label1.configure(text="Timetables")
+            label1.configure(text="Substituted Timetable")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class11_label2 = ctk.CTkLabel(master=frame, text="Class 11", font=('Segoe Ui', 35))
@@ -1251,7 +1251,7 @@ def tabsub():
             class11_back.place(relx=0.99, rely=0.95, anchor=ctk.NE)
 
         def class12():
-            label1.configure(text="Timetables")
+            label1.configure(text="Substituted Timetable")
             label1.place(relx=0.5, rely=0.08, anchor=ctk.N)
 
             class12_label2 = ctk.CTkLabel(master=frame, text="Class 12", font=('Segoe Ui', 35))
@@ -1601,6 +1601,7 @@ def tabsub():
         checkbox_frame.destroy()
         checkboxes_wrapper.destroy()
         label1.destroy()
+        label2.destroy()
         tab2()
 
     sub_back = ctk.CTkButton(master=frame, text="Back", font=('Segoe Ui', 10), command=_back)
