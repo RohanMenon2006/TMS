@@ -920,8 +920,9 @@ def tabsub():
             else:
                 Teachers[teacher] = 'Present'
             print("{teacher}: {state}".format(teacher=teacher, state=Teachers[teacher]))
-            fh = open("Checkbox_State.txt", "w")
-            fh.write(str(Teachers))
+            fh = open('Checkbox_State.json', "w")
+            json.dump(Teachers, fh)
+            fh.flush()
             
         checkbox_frames = []
         
