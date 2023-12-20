@@ -1,1 +1,0 @@
-{'Ceeba': 'Absent', 'Jane': 'Present', 'Betty': 'Present', 'Prinkle': 'Present', 'Rahul': 'Present', 'Stalin': 'Present', 'Kiruba': 'Present', 'Sowmya': 'Present', 'Malarkodi': 'Present'}
